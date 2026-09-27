@@ -255,3 +255,37 @@ of `approaching` stock; open monitoring and exports go into the known limits.
 **Result:** 10 changes to the spec, the design and three implementation issues (#13, #15,
 #16), before any code was written. Every one of them would have been more expensive to find
 after the code existed.
+
+---
+
+## Entry 11 · 2026-09-27 · [Discernment] Database schema and seed data (issue #15)
+
+From here, the owner asked the AI to work through all implementation issues on its own
+and report back.
+
+**The generated migration was wrong in two ways.** The AI used Alembic's autogenerate to
+draft the first migration, then read it before using it:
+
+1. The case-insensitive index on make and model was **missing**. Autogenerate skips
+   indexes built on expressions such as `lower(make)`, without an error.
+2. The check on `action_type` was **created twice** with the same name. SQLite accepts
+   that; PostgreSQL would reject it, and we only would have found out on the move.
+
+The migration was rewritten by hand, and a test now checks that the migrations create
+every table and index the models describe.
+
+**A conflict between the issue and the design.** Issue #15 asked for a vehicle "status"
+column. The approved design (SYSTEM_DESIGN 5.6) says there is none: a car is in stock
+while its sold date is empty. The AI followed the design, as the later decision.
+
+**Choices the issue did not ask for, reported per CLAUDE.md:**
+- Price is a whole number, not a decimal. SQLite has no exact decimal type, and car
+  prices do not need cents. The design document was updated.
+- The case-insensitive index uses `lower()` in both databases instead of a SQLite-only
+  setting, so there is one approach to maintain.
+- Two database checks were added: price is not negative, and a car is not sold before it
+  arrived.
+- The seed does nothing if it has already run, instead of trying to match rows one by one.
+
+**Caught by the warnings-as-errors rule (Entry 7):** a test left a database connection
+open. Python reported it as a warning, which failed the build, so it was fixed at once.

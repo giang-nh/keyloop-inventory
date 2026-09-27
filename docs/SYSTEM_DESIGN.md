@@ -123,7 +123,7 @@ erDiagram
         string make
         string model
         int model_year
-        decimal price
+        int price "whole currency units"
         date stock_in_date "may be empty"
         date sold_date "empty while in stock"
     }
@@ -155,7 +155,7 @@ reading every one):
 |---|---|
 | `vehicle(dealership_id, sold_date, stock_in_date)` | The main list: one dealership, in stock, by age |
 | `vehicle(stock_in_date)` | Filters by age and status across all dealerships |
-| `vehicle(make, model)`, ignoring upper and lower case | Make and model filters. A normal index cannot help a case-insensitive match, so this one is built case-insensitive (`COLLATE NOCASE` in SQLite, an index on `lower()` in PostgreSQL) |
+| `vehicle(make, model)`, ignoring upper and lower case | Make and model filters. A normal index cannot help a case-insensitive match, so this one is built on `lower(make)` and `lower(model)`. The same expression works in SQLite and PostgreSQL |
 | `vehicle(vin)` | Finding every stay in stock for one car |
 | `vehicle_action(vehicle_id, created_at)` | A vehicle's history, and its latest action |
 
