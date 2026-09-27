@@ -168,3 +168,19 @@ Given those, Python and FastAPI fit best: quick to build, the API contract is ge
 automatically, and testing is simple. Java with Spring Boot was considered and not chosen,
 because it does not match the assumed team and needs more setup for a small new service.
 This reasoning goes into ADR 0001 (issue #9).
+
+---
+
+## Entry 7 · 2026-09-27 · [Diligence] Project setup and a deprecation caught early (issues #7, #8)
+
+The AI added the issue templates, the project skeleton and CI. One thing worth noting:
+
+- **What happened:** the first test run passed, but with a warning. The test client
+  library the AI chose (`httpx`) is now deprecated for this use; the web framework asks
+  for `httpx2` instead. This is a classic AI mistake: using a library version that was
+  common in its training data but is now outdated.
+- **How it was caught:** the AI read the warning instead of ignoring a passing run, and
+  checked that `httpx2` really exists on the package index before switching.
+- **What we changed so it cannot slip through again:** pytest now treats every warning as
+  an error. Any deprecated API will now fail the build instead of printing a line that is
+  easy to miss.

@@ -1,0 +1,34 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Test and lint caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local database files (created by the seed and generator scripts)
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets and local settings
+.env
+.env.*
+.claude/settings.local.json
+
+# Power BI project: local-only files
+bi/**/.pbi/localSettings.json
+bi/**/.pbi/cache.abf
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
