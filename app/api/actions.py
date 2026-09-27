@@ -1,9 +1,10 @@
 """Action routes: record an action for a vehicle, and read its history."""
 
+import logging
 from datetime import date, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_now, get_reference_date, get_session
@@ -16,6 +17,8 @@ from app.services.actions import (
     list_actions,
     record_action,
 )
+
+logger = logging.getLogger("inventory")
 
 router = APIRouter(prefix="/api/v1/vehicles/{vehicle_id}/actions", tags=["Actions"])
 
@@ -37,6 +40,7 @@ router = APIRouter(prefix="/api/v1/vehicles/{vehicle_id}/actions", tags=["Action
 def record_action_route(
     vehicle_id: int,
     body: ActionIn,
+    request: Request,
     session: Annotated[Session, Depends(get_session)],
     reference_date: Annotated[date, Depends(get_reference_date)],
     now: Annotated[datetime, Depends(get_now)],
@@ -49,6 +53,19 @@ def record_action_route(
         raise vehicle_not_found(vehicle_id) from None
     except ActionNotAllowedError as error:
         raise ApiError(422, error.code, str(error)) from None
+
+    request.app.state.metrics.actions_recorded.labels(action.action_type.value).inc()
+    # IDs and type only: the note and the manager's name stay out of the logs.
+    logger.info(
+        "action_recorded",
+        extra={
+            "fields": {
+                "vehicle_id": vehicle_id,
+                "action_id": action.id,
+                "action_type": action.action_type.value,
+            }
+        },
+    )
     return ActionOut.model_validate(action)
 
 
