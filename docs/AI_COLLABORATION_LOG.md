@@ -329,3 +329,43 @@ itself, then broke the rule again to confirm the new test fails.
   this), the list shows it as `unknown` and logs a warning, instead of failing for
   everyone.
 - A blank manager name (only spaces) is rejected.
+
+---
+
+## Entry 13 · 2026-09-27 · [Discernment] Observability, exports, contract, traceability and data (issues #16, #26, #17, #18, #25)
+
+**The API contract described errors the API never sends.** FastAPI adds its own
+description of a 422 error (`{"detail": [...]}`) to the contract automatically. Our API
+actually answers with `{"error": {...}}`. A client built from the contract would have read
+errors wrongly. The contract now documents the real shape, and two tests guard it: one
+fails if the committed contract drifts from the code, the other checks real error bodies
+against the documented shape.
+
+**Every cURL example was run, not written from memory.** The examples in
+`docs/api/curl-examples.md` were run against a live server with the seed data, and the
+responses shown are the real ones. The same run confirmed in the server's own logs that
+managers' names and notes never appear there.
+
+**Checking the checks.** Mutation checks were extended: trusting any request ID, logging
+the note, and removing the CSV formula protection each made a test fail. The traceability
+test was checked the same way: an untested criterion added to the spec, and a test renamed
+to a criterion that does not exist, both failed the build.
+
+**The simulation document said something the data did not.** The first draft of
+`docs/DATA_SIMULATION.md` claimed "about one car in seven" stays more than 90 days and
+"most cars sell in four to eight weeks". Measured on the generated data, it is one in eight
+(12.7%), and the middle half sell in three to nine weeks. The document now states the
+measured numbers.
+
+**A misleading speed test.** The first timing of the API on 10,000 generated cars showed
+about 0.22 seconds for every endpoint, even the tiny summary. Equal times for very
+different work was suspicious. The cause was the test, not the API: on Windows,
+`localhost` tries IPv6 first and waits before falling back. Measured on `127.0.0.1`, the
+list takes about 12 ms, the summary about 7 ms, and a full export of 10,000 cars about
+130 ms. The server's own logs agree.
+
+**Honesty note on the dataset.** The simulation *assumes* that price cuts and promotions
+help cars sell. Any dashboard view that shows actions working is showing that assumption.
+The document says so in a warning box at the top.
+
+**Waiting for the owner:** the simulation rules (issue #25) need the owner's approval.
