@@ -184,3 +184,29 @@ The AI added the issue templates, the project skeleton and CI. One thing worth n
 - **What we changed so it cannot slip through again:** pytest now treats every warning as
   an error. Any deprecated API will now fail the build instead of printing a line that is
   easy to miss.
+
+---
+
+## Entry 8 · 2026-09-27 · [Delegation] System design and ADRs (issue #9)
+
+**How the design was made:** the AI listed options and weighed them; I chose.
+
+- **Four real trade-offs were put to me as options:** where aging is worked out, how the
+  latest action is found, which observability tools to use, and how the database structure
+  is managed. I chose Prometheus plus request IDs, and Alembic migrations, straight away.
+- **For the other two I asked for a plainer explanation first.** The first version was
+  written in database terms. The second used concrete examples (a car that arrived on
+  1 July; a car with three actions). With those, I chose: work aging out when asked, and
+  read the latest action from the history. Both keep each fact in one place.
+- **I also asked for the key decisions section to be rewritten.** The first version was a
+  one-line table. The final version gives each decision its question, an example, the
+  options with pros and cons, and what the choice costs.
+
+**What the AI added without being asked, and reported (per CLAUDE.md):** eight smaller
+choices, including no separate status column, a dealership list endpoint, one error
+shape, protection against CSV formula injection, and keeping free-text notes out of logs.
+I asked for each to be explained with an example, then accepted all eight.
+
+**Discernment note:** the CSV formula-injection risk was found by the AI while designing the
+export for Power BI and Excel. It was not in the spec. It shows why "what did you assume
+that I didn't ask for?" is worth asking every time.
