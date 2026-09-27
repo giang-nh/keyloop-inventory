@@ -42,7 +42,7 @@ def add_vehicle(session):
     session.add(dealership)
     session.commit()
 
-    def _add(days=10, make="Kia", model="Seltos", price=20_000, sold_days_ago=None,
+    def _add(days=10, make="Kia", model="Seltos", price=599_000_000, sold_days_ago=None,
              dealership_id=None, vin="TESTVIN0000000001"):
         vehicle = Vehicle(
             vin=vin,

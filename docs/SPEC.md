@@ -249,8 +249,9 @@ There is no login. The manager types their name when recording an action. In a r
 system this would come from the company's sign-in.
 
 **D-10 · Money**
-Prices are stored in one currency. The total value of aging stock is the sum of their
-list prices. It is a measure of size, not an accounting valuation.
+Prices are list prices in Vietnamese dong (VND), stored as whole numbers. The total
+value of aging stock is the sum of their list prices. It is a measure of size, not an
+accounting valuation.
 
 **D-11 · Can the same car be in stock more than once?**
 Yes. A car we sold can come back later, for example as a trade-in. Each stay in stock is
@@ -288,7 +289,7 @@ questions in this assessment, and each one would add work without making the cor
 | **Automatic price advice** | The brief asks for decisions made and recorded by people. Automated advice would also carry a risk: if the system nudged every aging car toward a price cut, it could push prices down across the board. That needs more care than this task allows. |
 | **Alerts and notifications** | The early warning is shown in the list and summary (Step 2). Pushing emails or messages is a separate feature. |
 | **Live screen updates** | "Real-time" here means correct at the moment you ask (D-1). |
-| **Several currencies or countries** | One currency keeps the money question simple (D-10). |
+| **Several currencies or countries** | One currency (VND) keeps the money question simple (D-10). |
 | **Production hosting** | The service runs locally. The system design document explains how it would move to PostgreSQL and a hosted setup. |
 
 ---

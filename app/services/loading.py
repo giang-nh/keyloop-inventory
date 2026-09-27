@@ -59,7 +59,9 @@ def check_record(record: VehicleRecord, reference_date: date) -> list[str]:
                 f"sold date {record.sold_date.isoformat()} is before the stock-in date "
                 f"{record.stock_in_date.isoformat()}"
             )
-    if record.price < 0:
+    if not isinstance(record.price, int) or isinstance(record.price, bool):
+        reasons.append(f"price {record.price!r} is not a whole number")
+    elif record.price < 0:
         reasons.append(f"price {record.price} is negative")
     return reasons
 

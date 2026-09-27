@@ -29,7 +29,7 @@ def test_ac_1_2_each_vehicle_shows_the_required_fields(client, seeded):
     assert item["vin"] == "SEED0000000000009"
     assert item["dealership_name"] == "Harbour Auto"
     assert (item["make"], item["model"], item["model_year"]) == ("Mitsubishi", "Xpander", 2023)
-    assert item["price"] == 21_000
+    assert item["price"] == 560_000_000
     assert item["stock_in_date"] == "2024-12-11"
     assert item["days_in_stock"] == 400
     assert item["stock_status"] == "aging"
@@ -189,8 +189,8 @@ def test_ac_2_8_summary_counts_and_values_for_all_dealerships(client, seeded):
         "vehicles_in_stock": 11,
         "aging_count": 4,  # 91, 95, 120, 400 days
         "approaching_count": 3,  # 76, 89, 90 days
-        "aging_value": 36_000 + 14_000 + 47_000 + 21_000,
-        "approaching_value": 24_000 + 42_000 + 31_000,
+        "aging_value": 707_000_000 + 320_000_000 + 1_099_000_000 + 560_000_000,
+        "approaching_value": 599_000_000 + 1_055_000_000 + 749_000_000,
     }
 
 

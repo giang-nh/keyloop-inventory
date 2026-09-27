@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 
 from app.models import Vehicle, VehicleAction
 from app.services.aging import APPROACHING_FROM_DAYS
-from app.simulation import generate, load
+from app.simulation import CATALOG, TET, generate, load
 
 REFERENCE = date(2026, 9, 27)
 
@@ -88,7 +88,8 @@ def test_trade_ins_come_back_after_they_were_sold(data):
         records.sort(key=lambda r: r.stock_in_date or REFERENCE)
         for earlier, later in zip(records, records[1:], strict=False):
             assert earlier.sold_date is not None
-            assert later.stock_in_date > earlier.sold_date
+            if later.stock_in_date is not None:  # a few cars have their date blanked
+                assert later.stock_in_date > earlier.sold_date
 
 
 def test_some_cars_in_stock_have_no_stock_in_date_and_no_actions(data):
@@ -96,6 +97,41 @@ def test_some_cars_in_stock_have_no_stock_in_date_and_no_actions(data):
 
     assert missing
     assert all(v.record.sold_date is None and not v.actions for v in missing)
+
+
+def test_prices_are_whole_vnd_within_each_models_price_list(data):
+    ranges = {(make, model): (low, high) for make, model, _, low, high, _ in CATALOG}
+
+    for v in data.vehicles:
+        r = v.record
+        assert isinstance(r.price, int)
+        low, high = ranges[(r.make, r.model)]
+        is_trade_in = r.price < low
+        assert r.price <= high
+        if is_trade_in:
+            assert r.price >= low * 0.6 - 1_000_000
+
+
+def test_no_model_arrives_before_it_went_on_sale(data):
+    launched = {model: start for _, model, _, _, _, start in CATALOG if start}
+
+    for v in data.vehicles:
+        start = launched.get(v.record.model)
+        if start and v.record.stock_in_date:
+            assert v.record.stock_in_date >= start
+
+
+def test_sales_dip_in_the_weeks_around_tet(data):
+    """Public data: car sales in Vietnam drop sharply around the Lunar New Year."""
+    tet = TET[2025]
+    sold_on = Counter(v.record.sold_date for v in data.vehicles if v.record.sold_date)
+
+    def sales(first_day, days):
+        return sum(sold_on[first_day + timedelta(days=d)] for d in range(days))
+
+    around_tet = sales(tet - timedelta(days=7), 15)
+    month_before = sales(tet - timedelta(days=45), 15)
+    assert around_tet < 0.5 * month_before
 
 
 def test_the_dataset_loads_through_the_normal_loader_checks(session, data):

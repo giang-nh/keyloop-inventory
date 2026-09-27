@@ -427,3 +427,38 @@ keep one (unmatched routes share one metric label).
 
 **Worth noting:** all three confirmed problems passed every existing test. Tests only check
 what someone thought to ask. The audit question found what nobody had asked.
+
+---
+
+## Entry 15 · 2026-09-27 · [Description] Calibrating the simulated data with the Vietnamese market (issue #25)
+
+**My request:** make the simulated data follow the real Vietnamese market, if public data
+exists. **My decisions:** calibrate with public data, use VND, and include VinFast.
+
+**What the AI found:** there is no public dataset of dealer stock in Vietnam (how long cars
+stay, when they sell). Paid reports exist; used-car listings exist but are not dealer
+stock and cannot be copied under their terms. What *is* public: 2025 sales by model, the
+Tet slump (January 2025 down 40%), launch dates for two models, and list prices. The data
+now uses those, and the document marks each rule as public data or assumption, with
+sources.
+
+**What the new tests caught in the AI's own change:**
+- Prices came out as decimals (`181000000.0`): `round(x, -6)` on a decimal number gives
+  back a decimal. SQLite stored it without complaint. The loader now rejects any price that
+  is not a whole number, so this cannot reach the database again.
+- One model's price was rounded above its highest list price (608 million against a list
+  maximum of 607.9 million). Prices are now kept inside the list after rounding.
+
+**Honest limits written into the document:**
+- VinFast is 45% of the cars in the data but 29% of the real 2025 market, because only the
+  top-selling models are in the catalog.
+- Three price ranges were read from search-result summaries, not from the pages
+  themselves; the document says which ones.
+- Selling times and the effect of actions are still assumptions.
+
+**A mix-up between two sessions.** While this work was in progress, a second session was
+working on the hidden-decisions audit (#19) in the same folder. Its commit (1a423ce) picked
+up five lines of this change (the "in VND" wording in the API descriptions, the CSV column
+description and the design document). The AI noticed when those files no longer showed as
+changed, checked the commit, and left the pushed history as it was. The rest of the change
+is in the next commit. Lesson: two sessions should not share one working folder.

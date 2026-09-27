@@ -1,7 +1,11 @@
 """Three years of simulated dealership data. The rules are in docs/DATA_SIMULATION.md.
 
+The model mix, prices, launch dates and Lunar New Year dates come from public Vietnamese
+market data (sources in the document). Selling times and the effect of actions are
+assumptions: there is no public data on how long cars stay in stock at Vietnamese dealers.
+
 Everything comes from one random seed, so the same seed and reference date always give
-the same data. Every pattern here is an assumption, not evidence about real dealerships.
+the same data.
 """
 
 import math
@@ -27,26 +31,42 @@ DEALERSHIPS = [
     ("Hilltop Autos", "Can Tho", 1.0, ("Bao Huynh", "Mai Do")),
 ]
 
-# make, model, typical price, share of arrivals, selling speed (above 1 = faster)
+MILLION = 1_000_000
+
+# The 14 models with the highest 2025 sales in Vietnam that have a public price list.
+# make, model, units sold in 2025 (sets the share of arrivals), lowest and highest list
+# price in VND (September 2026), first month on sale (None = on sale for the whole period).
 CATALOG = [
-    ("Toyota", "Vios", 18_000, 10, 1.3),
-    ("Toyota", "Corolla Cross", 28_000, 9, 1.2),
-    ("Toyota", "Fortuner", 42_000, 5, 0.9),
-    ("Honda", "City", 19_000, 8, 1.2),
-    ("Honda", "CR-V", 34_000, 7, 1.0),
-    ("Hyundai", "Accent", 16_000, 9, 1.1),
-    ("Hyundai", "Tucson", 30_000, 6, 0.9),
-    ("Kia", "Seltos", 24_000, 7, 1.0),
-    ("Kia", "Carnival", 45_000, 3, 0.7),
-    ("Mazda", "CX-5", 31_000, 8, 1.0),
-    ("Ford", "Ranger", 36_000, 7, 1.1),
-    ("Ford", "Everest", 47_000, 4, 0.7),
-    ("Mitsubishi", "Xpander", 21_000, 9, 1.1),
-    ("Mitsubishi", "Outlander", 33_000, 3, 0.6),
+    ("VinFast", "VF 3", 44_585, 299 * MILLION, 299 * MILLION, date(2024, 8, 1)),
+    ("VinFast", "VF 5", 43_913, 529 * MILLION, 529 * MILLION, None),
+    ("VinFast", "Limo Green", 27_127, 699 * MILLION, 699 * MILLION, date(2025, 9, 1)),
+    ("VinFast", "VF 6", 23_291, 646 * MILLION, 699 * MILLION, None),
+    ("Mitsubishi", "Xpander", 19_891, 555 * MILLION, 688 * MILLION, None),
+    ("Ford", "Ranger", 18_692, 659 * MILLION, 1_202 * MILLION, None),
+    ("Mazda", "CX-5", 17_262, 694 * MILLION, 979 * MILLION, None),
+    ("Mitsubishi", "Xforce", 15_254, 605 * MILLION, 720 * MILLION, None),
+    ("Toyota", "Yaris Cross", 14_601, 730 * MILLION, 838 * MILLION, None),
+    ("Toyota", "Vios", 13_424, 458 * MILLION, 545 * MILLION, None),
+    ("Honda", "City", 10_899, 499 * MILLION, 599 * MILLION, None),
+    ("Hyundai", "Tucson", 9_243, 769 * MILLION, 989 * MILLION, None),
+    ("Kia", "Seltos", 6_577, 599 * MILLION, 799 * MILLION, None),
+    ("Suzuki", "XL7 Hybrid", 2_633, 599_900_000, 607_900_000, None),
 ]
 
-# Fewer arrivals around the Lunar New Year, more before year end (January = index 0).
-MONTH_FACTOR = [0.95, 0.7, 1.0, 1.0, 1.0, 0.95, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2]
+# First day of the Lunar New Year (Tet). Car sales in Vietnam drop sharply around it:
+# January 2025, the Tet month, was down 40% on December (VietnamPlus).
+TET = {
+    2023: date(2023, 1, 22),
+    2024: date(2024, 2, 10),
+    2025: date(2025, 1, 29),
+    2026: date(2026, 2, 17),
+    2027: date(2027, 2, 6),
+}
+TET_SLOWDOWN = (-7, 7)  # days around Tet when arrivals drop and sales pause
+TET_ARRIVAL_FACTOR = 0.4
+
+# More arrivals in the last quarter, when dealers stock up for year-end sales.
+MONTH_FACTOR = [1.0, 1.0, 1.0, 1.0, 1.0, 0.95, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2]
 
 TYPICAL_DAYS_TO_SELL = 38
 DAYS_TO_SELL_SPREAD = 0.8  # log-normal sigma: a long tail of slow sellers
@@ -109,14 +129,22 @@ class _Simulator:
         self.reference_date = reference_date
         self.window_start = reference_date - timedelta(days=round(YEARS * 365.25))
         self.start = self.window_start - timedelta(days=WARM_UP_DAYS)
-        self.weights = [c[3] for c in CATALOG]
+        self.weights = [c[2] for c in CATALOG]
 
     def vin(self) -> str:
         return "".join(self.rng.choice(_VIN_CHARS) for _ in range(17))
 
+    @staticmethod
+    def near_tet(day: date) -> bool:
+        tet = TET.get(day.year)
+        before, after = TET_SLOWDOWN
+        return tet is not None and before <= (day - tet).days <= after
+
     def arrivals_today(self, day: date, per_day: float) -> int:
         years_in = (day - self.start).days / 365.25
         expected = per_day * MONTH_FACTOR[day.month - 1] * (1 + YEARLY_GROWTH) ** years_in
+        if self.near_tet(day):
+            expected *= TET_ARRIVAL_FACTOR
         # Poisson draw (Knuth's method), fine for small averages.
         limit, count, product = math.exp(-expected), 0, self.rng.random()
         while product > limit:
@@ -124,9 +152,23 @@ class _Simulator:
             product *= self.rng.random()
         return count
 
-    def days_to_sell(self, speed: float, price: int, typical_price: int) -> int:
-        typical = TYPICAL_DAYS_TO_SELL / speed * (price / typical_price) ** 1.5
-        return max(1, round(self.rng.lognormvariate(math.log(typical), DAYS_TO_SELL_SPREAD)))
+    def days_to_sell(self) -> int:
+        # No public data by model, so every model shares one assumed distribution.
+        return max(
+            1, round(self.rng.lognormvariate(math.log(TYPICAL_DAYS_TO_SELL), DAYS_TO_SELL_SPREAD))
+        )
+
+    def after_tet(self, arrived: date, days: int) -> int:
+        """Sales pause around Tet: a sale that would fall then happens after it."""
+        sale = arrived + timedelta(days=days)
+        if self.near_tet(sale):
+            resume = TET[sale.year] + timedelta(days=TET_SLOWDOWN[1] + 1 + self.rng.randint(0, 10))
+            return (resume - arrived).days
+        return days
+
+    def pick_model(self, day: date) -> int:
+        on_sale = [i for i, c in enumerate(CATALOG) if c[5] is None or c[5] <= day]
+        return self.rng.choices(on_sale, [self.weights[i] for i in on_sale])[0]
 
     def stamp(self, day: date) -> datetime:
         # Office hours in Vietnam (08:00 to 18:00, UTC+7) are 01:00 to 11:00 UTC.
@@ -165,15 +207,21 @@ class _Simulator:
             model_index: int | None = None, price: int | None = None,
             model_year: int | None = None) -> SimVehicle:
         if model_index is None:
-            model_index = self.rng.choices(range(len(CATALOG)), self.weights)[0]
-        make, model, typical_price, _, speed = CATALOG[model_index]
+            model_index = self.pick_model(arrived)
+        make, model, _, lowest, highest, launched = CATALOG[model_index]
         if price is None:
-            price = round(typical_price * self.rng.uniform(0.92, 1.08), -2)
+            # A version somewhere in the model's price list, to the nearest million.
+            price = lowest
+            if highest > lowest:
+                # Round to the nearest million, but never outside the price list.
+                price = min(highest, max(lowest, int(round(self.rng.uniform(lowest, highest), -6))))
         if model_year is None:
-            model_year = arrived.year if self.rng.random() < 0.7 else arrived.year - 1
+            new_model = launched is not None and launched.year == arrived.year
+            recent = new_model or self.rng.random() < 0.7
+            model_year = arrived.year if recent else arrived.year - 1
 
         days, actions = self.act(
-            arrived, self.days_to_sell(speed, price, typical_price), DEALERSHIPS[dealership][3]
+            arrived, self.after_tet(arrived, self.days_to_sell()), DEALERSHIPS[dealership][3]
         )
         sold = arrived + timedelta(days=days)
         record = VehicleRecord(
@@ -221,7 +269,7 @@ class _Simulator:
                 self.car(
                     original.dealership, back, vin=original.record.vin,
                     model_index=original.model_index,
-                    price=round(original.record.price * self.rng.uniform(0.6, 0.75), -2),
+                    price=int(round(original.record.price * self.rng.uniform(0.6, 0.75), -6)),
                     model_year=original.record.model_year,
                 )
             )

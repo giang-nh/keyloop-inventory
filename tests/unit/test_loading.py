@@ -54,6 +54,12 @@ def test_loader_rejects_a_sale_in_the_future():
     assert any("sold date" in r and "after today" in r for r in check_record(bad, REFERENCE_DATE))
 
 
+def test_loader_rejects_a_price_that_is_not_a_whole_number():
+    bad = record(price=529_000_000.0)
+
+    assert any("not a whole number" in r for r in check_record(bad, REFERENCE_DATE))
+
+
 def test_loader_reports_every_bad_record_not_just_the_first():
     bad = [record(price=-1), record(stock_in_date=REFERENCE_DATE + timedelta(days=5))]
 

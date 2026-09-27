@@ -1,4 +1,4 @@
-"""A small, fixed dataset for tests and quick checks.
+"""A small, fixed dataset for tests and quick checks. Prices are in VND.
 
 Every date is set relative to a reference date, so the boundary cases (75, 76, 89, 90
 and 91 days in stock) are always true on the day the seed runs. For three years of
@@ -35,20 +35,26 @@ class SeedVehicle:
 # Each row is there for a reason, given in the comment.
 VEHICLES = [
     # Arrived today.
-    SeedVehicle("SEED0000000000001", 0, "Toyota", "Corolla Cross", 2025, 28_000, 0),
-    SeedVehicle("SEED0000000000002", 0, "Honda", "CR-V", 2025, 34_000, 30),  # fresh
-    SeedVehicle("SEED0000000000003", 1, "Hyundai", "Tucson", 2024, 30_000, 75),  # last fresh day
-    SeedVehicle("SEED0000000000004", 1, "Kia", "Seltos", 2024, 24_000, 76),  # first approaching
-    SeedVehicle("SEED0000000000005", 0, "Toyota", "Fortuner", 2024, 42_000, 89),  # approaching
-    SeedVehicle("SEED0000000000006", 2, "Mazda", "CX-5", 2024, 31_000, 90),  # last day not aging
-    SeedVehicle("SEED0000000000007", 2, "Ford", "Ranger", 2024, 36_000, 91),  # first aging day
-    SeedVehicle("SEED0000000000008", 0, "Ford", "Everest", 2023, 47_000, 120),  # aging
-    SeedVehicle("SEED0000000000009", 1, "Mitsubishi", "Xpander", 2023, 21_000, 400),  # very old
-    SeedVehicle("SEED0000000000010", 2, "Honda", "City", 2024, 19_000, None),  # no stock-in date
-    SeedVehicle("SEED0000000000011", 0, "Toyota", "Vios", 2024, 18_000, 60, 10),  # sold
+    SeedVehicle("SEED0000000000001", 0, "Toyota", "Corolla Cross", 2025, 820_000_000, 0),
+    SeedVehicle("SEED0000000000002", 0, "Honda", "CR-V", 2025, 1_029_000_000, 30),  # fresh
+    # Last fresh day.
+    SeedVehicle("SEED0000000000003", 1, "Hyundai", "Tucson", 2024, 769_000_000, 75),
+    # First approaching.
+    SeedVehicle("SEED0000000000004", 1, "Kia", "Seltos", 2024, 599_000_000, 76),
+    # Approaching.
+    SeedVehicle("SEED0000000000005", 0, "Toyota", "Fortuner", 2024, 1_055_000_000, 89),
+    # Last day not aging.
+    SeedVehicle("SEED0000000000006", 2, "Mazda", "CX-5", 2024, 749_000_000, 90),
+    SeedVehicle("SEED0000000000007", 2, "Ford", "Ranger", 2024, 707_000_000, 91),  # first aging day
+    SeedVehicle("SEED0000000000008", 0, "Ford", "Everest", 2023, 1_099_000_000, 120),  # aging
+    # Very old.
+    SeedVehicle("SEED0000000000009", 1, "Mitsubishi", "Xpander", 2023, 560_000_000, 400),
+    # No stock-in date.
+    SeedVehicle("SEED0000000000010", 2, "Honda", "City", 2024, 499_000_000, None),
+    SeedVehicle("SEED0000000000011", 0, "Toyota", "Vios", 2024, 458_000_000, 60, 10),  # sold
     # A car that was sold and came back as a trade-in: same VIN, two stays in stock.
-    SeedVehicle("SEED0000000000012", 1, "Hyundai", "Accent", 2022, 16_000, 500, 380),
-    SeedVehicle("SEED0000000000012", 1, "Hyundai", "Accent", 2022, 14_000, 95),
+    SeedVehicle("SEED0000000000012", 1, "Hyundai", "Accent", 2022, 439_000_000, 500, 380),
+    SeedVehicle("SEED0000000000012", 1, "Hyundai", "Accent", 2022, 320_000_000, 95),
 ]
 
 

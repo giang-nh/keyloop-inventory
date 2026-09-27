@@ -2,7 +2,7 @@
 
 These examples stand in for the manager's screen, which is not part of this assessment.
 Every command below was run against a local server loaded with the seed data, and the
-responses shown are real (shortened where marked with `…`).
+responses shown are real (last run 2026-09-27, after the switch to VND) (shortened where marked with `…`).
 
 The full contract is in [`openapi.json`](openapi.json). With the server running, the same
 contract is shown as an interactive page at <http://localhost:8000/docs>.
@@ -46,7 +46,7 @@ curl -s "http://localhost:8000/api/v1/vehicles?status=aging&limit=2"
     {
       "id": 9, "vin": "SEED0000000000009",
       "dealership_id": 2, "dealership_name": "Harbour Auto",
-      "make": "Mitsubishi", "model": "Xpander", "model_year": 2023, "price": 21000,
+      "make": "Mitsubishi", "model": "Xpander", "model_year": 2023, "price": 560000000,
       "stock_in_date": "2025-08-23", "sold_date": null,
       "days_in_stock": 400, "stock_status": "aging",
       "latest_action": {"id": 3, "action_type": "SEND_TO_AUCTION", "created_by": "Minh Pham", …}
@@ -103,12 +103,12 @@ curl -s "http://localhost:8000/api/v1/inventory/summary"
   "vehicles_in_stock": 11,
   "aging_count": 4,
   "approaching_count": 3,
-  "aging_value": 118000,
-  "approaching_value": 97000
+  "aging_value": 2686000000,
+  "approaching_value": 2403000000
 }
 ```
 
-Add `?dealership_id=1` for one dealership.
+Values are list prices in VND. Add `?dealership_id=1` for one dealership.
 
 ## 6. Record an action for an aging vehicle
 
@@ -124,7 +124,7 @@ Response `201 Created`. The service sets the time:
 {
   "id": 6, "vehicle_id": 8, "action_type": "PRICE_REDUCTION_PLANNED",
   "note": "Reduce by 5%", "created_by": "Linh Tran",
-  "created_at": "2026-09-27T11:35:36.651806Z"
+  "created_at": "2026-09-27T12:28:20.053434Z"
 }
 ```
 
@@ -171,10 +171,11 @@ curl -s "http://localhost:8000/api/v1/exports/vehicles.csv" | head -3
 
 ```csv
 vehicle_id,vin,dealership_id,dealership_name,make,model,model_year,price,stock_in_date,sold_date,in_stock,days_in_stock,stock_status
-1,SEED0000000000001,1,Riverside Motors,Toyota,Corolla Cross,2025,28000,2026-09-27,,true,0,fresh
-2,SEED0000000000002,1,Riverside Motors,Honda,CR-V,2025,34000,2026-08-28,,true,30,fresh
+1,SEED0000000000001,1,Riverside Motors,Toyota,Corolla Cross,2025,820000000,2026-09-27,,true,0,fresh
+2,SEED0000000000002,1,Riverside Motors,Honda,CR-V,2025,1029000000,2026-08-28,,true,30,fresh
 ```
 
+The file starts with a byte order mark, so Excel shows Vietnamese accents correctly.
 The actions export is at `/api/v1/exports/actions.csv`.
 
 ## 10. Operations
@@ -189,7 +190,7 @@ curl -s -i "http://localhost:8000/health" -H "X-Request-ID: demo-123"
 HTTP/1.1 200 OK
 x-request-id: demo-123
 
-{"status": "ok", "database": "ok"}
+{"status":"ok","database":"ok","schema":"up_to_date"}
 ```
 
 The matching log line on the server:

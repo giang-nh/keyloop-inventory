@@ -61,8 +61,8 @@ class Vehicle(Base):
     make: Mapped[str] = mapped_column(String(50))
     model: Mapped[str] = mapped_column(String(50))
     model_year: Mapped[int] = mapped_column(Integer)
-    # Whole currency units. Car prices do not need cents, and whole numbers avoid
-    # rounding differences between databases.
+    # List price in VND, a whole number. VND has no smaller unit in use, and whole
+    # numbers avoid rounding differences between databases.
     price: Mapped[int] = mapped_column(Integer)
     # May be empty: the car is then shown with the status "unknown" (SPEC D-6).
     stock_in_date: Mapped[date | None] = mapped_column(Date)
