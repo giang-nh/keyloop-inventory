@@ -30,7 +30,30 @@ def test_health_is_ok_when_the_database_is_reachable(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "database": "ok"}
+    assert response.json() == {"status": "ok", "database": "ok", "schema": "up_to_date"}
+
+
+def test_health_is_503_when_the_database_was_never_migrated(tmp_path):
+    """Found in the hidden-decisions audit (#19): a plain connection check passed on a
+    database with no tables, while every other request failed."""
+    with make_client(f"sqlite:///{(tmp_path / 'empty.db').as_posix()}") as client:
+        health = client.get("/health")
+
+    assert health.status_code == 503
+    assert health.json()["schema"] == "not_migrated"
+    assert "alembic upgrade head" in health.json()["fix"]
+
+
+def test_health_is_503_when_the_database_is_behind_the_code(client, engine):
+    from sqlalchemy import text
+
+    with engine.begin() as connection:
+        connection.execute(text("UPDATE alembic_version SET version_num = 'old'"))
+
+    health = client.get("/health")
+
+    assert health.status_code == 503
+    assert health.json()["schema"] == "out_of_date"
 
 
 def test_health_is_503_when_the_database_is_unreachable(tmp_path):
@@ -120,3 +143,29 @@ def test_metrics_count_recorded_actions_by_type(client, add_vehicle):
     text = client.get("/metrics").text
 
     assert 'vehicle_actions_recorded_total{action_type="SEND_TO_AUCTION"} 2.0' in text
+
+
+def test_unexpected_errors_use_the_standard_error_shape_and_keep_the_request_id(
+    engine, database_url, log_lines
+):
+    """Found in the hidden-decisions audit (#19): unexpected errors used to return plain
+    text, not the error shape every client expects."""
+    from app.api.schemas import ErrorResponse
+
+    client = make_client(database_url)
+
+    @client.app.get("/boom")
+    def boom():
+        raise RuntimeError("internal detail that must not leak")
+
+    with client:
+        response = client.get("/boom", headers={"X-Request-ID": "err-1"})
+
+    assert response.status_code == 500
+    body = ErrorResponse.model_validate(response.json())
+    assert body.error.code == "internal_error"
+    assert "err-1" in body.error.message
+    assert "internal detail" not in response.text
+    assert response.headers["X-Request-ID"] == "err-1"
+    errors = [line for line in log_lines if line["event"] == "unhandled_error"]
+    assert errors and errors[0]["request_id"] == "err-1"

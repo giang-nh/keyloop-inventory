@@ -83,7 +83,7 @@ so the service is always correct for today without any background jobs.
 | `GET /api/v1/vehicles/{id}/actions` | A vehicle's action history, newest first | R3 |
 | `GET /api/v1/exports/vehicles.csv` | All vehicles, in stock and sold, for reporting tools | R4 |
 | `GET /api/v1/exports/actions.csv` | All actions, for reporting tools | R4 |
-| `GET /health` | Is the service up and can it reach the database? | Operations |
+| `GET /health` | Is the service up, can it reach the database, and is the database migrated to the version the code expects? | Operations |
 | `GET /metrics` | Metrics for a monitoring tool | Operations |
 
 Errors use one shape everywhere, so a client only needs to handle it once:
@@ -99,7 +99,11 @@ wrong and what to do next.
   cursor-based approach would avoid that, but is not needed at this scale.
 - **Stable order:** vehicles with no stock-in date first, then most days in stock, then
   by ID, so the same request always gives the same order (SPEC AC-1.9).
-- **Invalid input returns 422** with the standard error shape.
+- **Invalid input returns 422** with the standard error shape. Unknown fields in a request
+  body are rejected, not ignored; this is also what stops a client from setting an
+  action's time.
+- **Unexpected errors return 500** with the same error shape and the request ID, and no
+  internal details.
 - **The service sets all timestamps**, in UTC. Clients cannot set or change them (SPEC D-12).
 
 ---
@@ -123,7 +127,7 @@ erDiagram
         string make
         string model
         int model_year
-        int price "whole currency units"
+        int price "list price in VND"
         date stock_in_date "may be empty"
         date sold_date "empty while in stock"
     }
@@ -443,7 +447,8 @@ business grows.
 - **Bad data is stopped at the door.** The loader rejects bad records, and the API rejects
   bad input with a clear message.
 - **No background jobs** means nothing can silently fail overnight and leave wrong data.
-- `/health` checks the database, so a load balancer or monitor can take a broken copy out
+- `/health` checks that the database can be reached **and** that its schema is at the
+  version the code expects, so a load balancer or monitor can take a broken copy out
   of service.
 
 ### Maintainability
@@ -601,3 +606,5 @@ export is opened in Excel. The design now protects against it (section 5.6).
 | "Today" is the UTC date, so a dealership far from UTC sees a status change a few hours late or early on the boundary day (SPEC D-2) | Store a time zone per dealership and count days in local time |
 | The VIN is not unique, so the database cannot stop the same car being loaded twice by mistake (SPEC D-11) | Have the loader warn when a VIN already has a vehicle in stock |
 | Offset paging: a car can shift between pages if data changes between two calls | Cursor-based paging |
+| No limit on how often a caller can call the API. The CSV exports read whole tables, so repeated calls could slow the service | Rate limits per caller, once there is a login |
+| SQLite handles one write at a time. A second write waits up to 5 seconds, then fails with "database is locked"; the service does not retry | Move to PostgreSQL (ADR 0002) |

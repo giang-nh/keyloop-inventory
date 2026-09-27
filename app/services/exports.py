@@ -27,7 +27,7 @@ VEHICLE_COLUMNS = [
     ("make", "Make."),
     ("model", "Model."),
     ("model_year", "Model year."),
-    ("price", "List price, whole currency units."),
+    ("price", "List price, in VND."),
     ("stock_in_date", "Date the car arrived (YYYY-MM-DD). Empty if not known."),
     ("sold_date", "Date the car was sold (YYYY-MM-DD). Empty while in stock."),
     ("in_stock", "true or false."),
@@ -73,6 +73,9 @@ def _utc(value: datetime) -> str:
 
 def _csv_stream(header: list[str], rows: Iterator[list]) -> Iterator[str]:
     buffer = io.StringIO()
+    # A byte order mark at the start tells Excel the file is UTF-8, so accented text such
+    # as Vietnamese names shows correctly. Power BI reads it either way.
+    buffer.write("﻿")
     writer = csv.writer(buffer, lineterminator="\n")
     writer.writerow(header)
     for count, row in enumerate(rows, start=1):

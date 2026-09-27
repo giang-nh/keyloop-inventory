@@ -391,3 +391,39 @@ What was done:
 **Honest limit:** local checks are weaker evidence than CI on an independent machine.
 Anyone can see the workflow and run the same commands, but nothing outside my machine has
 run them for these commits.
+
+---
+
+## Entry 15 · 2026-09-27 · [Diligence] Hidden-decisions audit (issue #19)
+
+I asked the question from issue #19: *"What assumptions and trade-offs did you make, and
+what security risks should I know about?"* The AI went back through all the code it had
+written, instead of repeating what it had already reported, and checked its three most
+serious suspicions by running them before answering.
+
+**What it found (all confirmed by running, not just reading):**
+
+1. `/health` said "ok" on a database with **no tables**, while every real request failed
+   with an error. A load balancer would have kept sending traffic to a broken service.
+2. Unexpected errors came back as **plain text**, not the error shape the design promises
+   for every error, and without the request ID.
+3. CSV exports had **no byte order mark**, so Excel on Windows would garble Vietnamese
+   text in notes and names.
+
+It also found, by reading: the default database path depended on the folder the service
+was started from (the cause of problem 1 in practice); blank notes were saved as empty
+text instead of "no note"; and dependency versions were not locked.
+
+**My decisions:** fix six (health checks the schema version; one error shape for 500s;
+database path fixed to the project folder; BOM in CSVs; blank notes saved as none; a lock
+file), document three (unknown fields are rejected; no rate limit; SQLite write locking),
+keep one (unmatched routes share one metric label).
+
+**How the fixes were checked:**
+- A test for each fix. Mutation check: removing the schema check from `/health` made two
+  tests fail.
+- The lock file was installed into a brand-new virtual environment and the full suite ran
+  there: 506 passed.
+
+**Worth noting:** all three confirmed problems passed every existing test. Tests only check
+what someone thought to ask. The audit question found what nobody had asked.

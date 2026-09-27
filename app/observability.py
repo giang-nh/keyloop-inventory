@@ -17,6 +17,7 @@ from contextvars import ContextVar
 from datetime import UTC, datetime
 
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     CollectorRegistry,
@@ -24,7 +25,9 @@ from prometheus_client import (
     Histogram,
     generate_latest,
 )
-from sqlalchemy import text
+
+from app.api.errors import error_body
+from app.db import current_schema_version, expected_schema_version
 
 logger = logging.getLogger("inventory")
 
@@ -113,7 +116,20 @@ def add_observability(app: FastAPI) -> None:
         started = time.perf_counter()
         status = 500
         try:
-            response = await call_next(request)
+            try:
+                response = await call_next(request)
+            except Exception:
+                # Anything we did not expect. Log it with the request ID, and answer in the
+                # usual error shape without internal details.
+                logger.exception("unhandled_error")
+                response = JSONResponse(
+                    error_body(
+                        "internal_error",
+                        "Something went wrong on our side. Please try again. If it keeps "
+                        f"happening, report request ID {request_id}.",
+                    ),
+                    status_code=500,
+                )
             status = response.status_code
             response.headers[REQUEST_ID_HEADER] = request_id
             return response
@@ -139,22 +155,25 @@ def add_observability(app: FastAPI) -> None:
     @app.get(
         "/health",
         tags=["Operations"],
-        summary="Is the service up and can it reach the database?",
+        summary="Is the service up, can it reach the database, and is the database up to date?",
     )
-    def health(request: Request) -> Response:
+    def health(request: Request) -> JSONResponse:
+        # Reaching the database is not enough: a database without the tables (for example,
+        # never migrated) would pass a simple connection check while every request fails.
         try:
-            with request.app.state.engine.connect() as connection:
-                connection.execute(text("SELECT 1"))
-        except Exception:  # noqa: BLE001  (any failure means "not healthy")
-            logger.error("health_check_failed")
-            return Response(
-                json.dumps({"status": "unavailable", "database": "unreachable"}),
-                status_code=503,
-                media_type="application/json",
-            )
-        return Response(
-            json.dumps({"status": "ok", "database": "ok"}), media_type="application/json"
-        )
+            current = current_schema_version(request.app.state.engine)
+        except Exception:
+            logger.error("health_check_failed", extra={"fields": {"reason": "unreachable"}})
+            body = {"status": "unavailable", "database": "unreachable"}
+            return JSONResponse(body, status_code=503)
+        expected = expected_schema_version()
+        if current != expected:
+            schema = "not_migrated" if current is None else "out_of_date"
+            logger.error("health_check_failed", extra={"fields": {"reason": schema}})
+            body = {"status": "unavailable", "database": "ok", "schema": schema,
+                    "fix": "Run: alembic upgrade head"}
+            return JSONResponse(body, status_code=503)
+        return JSONResponse({"status": "ok", "database": "ok", "schema": "up_to_date"})
 
     @app.get("/metrics", tags=["Operations"], summary="Metrics for a monitoring tool")
     def metrics_endpoint() -> Response:

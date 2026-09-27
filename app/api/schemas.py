@@ -68,6 +68,11 @@ class ActionIn(BaseModel):
     )
     note: str | None = Field(default=None, max_length=500, description="Optional detail.")
 
+    @field_validator("note")
+    @classmethod
+    def _blank_note_is_no_note(cls, value: str | None) -> str | None:
+        return value if value and value.strip() else None
+
     @field_validator("created_by")
     @classmethod
     def _not_blank(cls, value: str) -> str:
@@ -85,7 +90,7 @@ class VehicleOut(BaseModel):
     make: str
     model: str
     model_year: int
-    price: int = Field(description="List price, in whole currency units.")
+    price: int = Field(description="List price, in VND.")
     stock_in_date: date | None = Field(description="Empty when the date is not known.")
     sold_date: date | None = Field(description="Empty while the vehicle is in stock.")
     days_in_stock: int | None = Field(
@@ -111,5 +116,7 @@ class InventorySummary(BaseModel):
     vehicles_in_stock: int
     aging_count: int
     approaching_count: int
-    aging_value: int = Field(description="Total list price of aging vehicles.")
-    approaching_value: int = Field(description="Total list price of approaching vehicles.")
+    aging_value: int = Field(description="Total list price of aging vehicles, in VND.")
+    approaching_value: int = Field(
+        description="Total list price of approaching vehicles, in VND."
+    )

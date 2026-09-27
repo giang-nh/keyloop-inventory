@@ -11,7 +11,7 @@
         "tags": [
           "Operations"
         ],
-        "summary": "Is the service up and can it reach the database?",
+        "summary": "Is the service up, can it reach the database, and is the database up to date?",
         "operationId": "health_health_get",
         "responses": {
           "200": {
@@ -483,7 +483,7 @@
           "Exports"
         ],
         "summary": "All vehicles as CSV",
-        "description": "Every vehicle, in stock and sold, for Power BI or Excel (Get Data > Web). Days in stock and status use the same rule as the API.\n\nColumns:\n\n- `vehicle_id`: Vehicle ID. One ID per stay in stock.\n- `vin`: Vehicle Identification Number. Can repeat if a car came back.\n- `dealership_id`: Dealership ID.\n- `dealership_name`: Dealership name.\n- `make`: Make.\n- `model`: Model.\n- `model_year`: Model year.\n- `price`: List price, whole currency units.\n- `stock_in_date`: Date the car arrived (YYYY-MM-DD). Empty if not known.\n- `sold_date`: Date the car was sold (YYYY-MM-DD). Empty while in stock.\n- `in_stock`: true or false.\n- `days_in_stock`: In stock: days from arrival to today. Sold: days from arrival to the sale. Empty if the stock-in date is not known.\n- `stock_status`: fresh, approaching, aging or unknown. Empty for sold cars.",
+        "description": "Every vehicle, in stock and sold, for Power BI or Excel (Get Data > Web). Days in stock and status use the same rule as the API.\n\nColumns:\n\n- `vehicle_id`: Vehicle ID. One ID per stay in stock.\n- `vin`: Vehicle Identification Number. Can repeat if a car came back.\n- `dealership_id`: Dealership ID.\n- `dealership_name`: Dealership name.\n- `make`: Make.\n- `model`: Model.\n- `model_year`: Model year.\n- `price`: List price, in VND.\n- `stock_in_date`: Date the car arrived (YYYY-MM-DD). Empty if not known.\n- `sold_date`: Date the car was sold (YYYY-MM-DD). Empty while in stock.\n- `in_stock`: true or false.\n- `days_in_stock`: In stock: days from arrival to today. Sold: days from arrival to the sale. Empty if the stock-in date is not known.\n- `stock_status`: fresh, approaching, aging or unknown. Empty for sold cars.",
         "operationId": "vehicles_export_api_v1_exports_vehicles_csv_get",
         "responses": {
           "200": {
@@ -724,12 +724,12 @@
           "aging_value": {
             "type": "integer",
             "title": "Aging Value",
-            "description": "Total list price of aging vehicles."
+            "description": "Total list price of aging vehicles, in VND."
           },
           "approaching_value": {
             "type": "integer",
             "title": "Approaching Value",
-            "description": "Total list price of approaching vehicles."
+            "description": "Total list price of approaching vehicles, in VND."
           }
         },
         "type": "object",
@@ -786,7 +786,7 @@
           "price": {
             "type": "integer",
             "title": "Price",
-            "description": "List price, in whole currency units."
+            "description": "List price, in VND."
           },
           "stock_in_date": {
             "anyOf": [

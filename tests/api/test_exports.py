@@ -1,5 +1,6 @@
 """CSV exports for reporting tools (R4). Test names include the criterion they prove."""
 
+import codecs
 import csv
 import io
 import re
@@ -11,7 +12,11 @@ ACTIONS_CSV = "/api/v1/exports/actions.csv"
 
 
 def read_csv(response) -> list[dict]:
-    return list(csv.DictReader(io.StringIO(response.text)))
+    return list(csv.DictReader(io.StringIO(response.content.decode("utf-8-sig"))))
+
+
+def header(response) -> list[str]:
+    return response.content.decode("utf-8-sig").splitlines()[0].split(",")
 
 
 def test_ac_4_1_vehicles_csv_includes_in_stock_and_sold_vehicles(client, seeded):
@@ -54,8 +59,8 @@ def test_ac_4_3_header_rows_match_the_documented_columns(client, seeded):
     vehicles = client.get(VEHICLES_CSV)
     actions = client.get(ACTIONS_CSV)
 
-    assert vehicles.text.splitlines()[0].split(",") == [name for name, _ in VEHICLE_COLUMNS]
-    assert actions.text.splitlines()[0].split(",") == [name for name, _ in ACTION_COLUMNS]
+    assert header(vehicles) == [name for name, _ in VEHICLE_COLUMNS]
+    assert header(actions) == [name for name, _ in ACTION_COLUMNS]
     assert vehicles.headers["content-type"].startswith("text/csv")
     assert 'filename="vehicles.csv"' in vehicles.headers["content-disposition"]
 
@@ -117,3 +122,16 @@ def test_large_exports_are_produced_in_chunks(engine, add_vehicle, monkeypatch):
 
     assert len(chunks) == 3  # rows 1-2, rows 3-4, row 5 (the header rides with the first)
     assert len("".join(chunks).splitlines()) == 6  # header + 5 rows
+
+
+def test_csv_starts_with_a_byte_order_mark_so_excel_reads_accents(client, add_vehicle):
+    vehicle = add_vehicle(days=120)
+    client.post(
+        f"/api/v1/vehicles/{vehicle.id}/actions",
+        json={"action_type": "OTHER", "created_by": "Nguyễn Văn An", "note": "Giảm giá 5%"},
+    )
+
+    for url in (VEHICLES_CSV, ACTIONS_CSV):
+        assert client.get(url).content.startswith(codecs.BOM_UTF8), url
+    row = read_csv(client.get(ACTIONS_CSV))[0]
+    assert (row["created_by"], row["note"]) == ("Nguyễn Văn An", "Giảm giá 5%")

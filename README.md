@@ -12,6 +12,8 @@ that have been in stock for more than 90 days, and record what to do about them.
 python -m venv .venv
 # Windows: .venv\Scripts\activate    macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
+# Or, for the exact versions the tests passed with:
+# pip install -r requirements.lock && pip install -e . --no-deps
 ruff check .
 pytest
 ```

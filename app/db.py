@@ -1,9 +1,10 @@
 """Database engine and sessions."""
 
-from sqlalchemy import Engine, create_engine, event
+from alembic.script import ScriptDirectory
+from sqlalchemy import Engine, create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from app.config import database_url
+from app.config import PROJECT_ROOT, database_url
 
 
 class Base(DeclarativeBase):
@@ -27,3 +28,16 @@ def make_engine(url: str | None = None) -> Engine:
 
 def make_session_factory(engine: Engine) -> sessionmaker:
     return sessionmaker(bind=engine, expire_on_commit=False)
+
+
+def expected_schema_version() -> str:
+    """The newest migration in the repository."""
+    return ScriptDirectory(str(PROJECT_ROOT / "migrations")).get_current_head()
+
+
+def current_schema_version(engine: Engine) -> str | None:
+    """The migration the database is at, or None if it has never been migrated."""
+    with engine.connect() as connection:
+        if not engine.dialect.has_table(connection, "alembic_version"):
+            return None
+        return connection.execute(text("SELECT version_num FROM alembic_version")).scalar()

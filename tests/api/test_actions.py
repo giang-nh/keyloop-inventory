@@ -45,6 +45,15 @@ def test_ac_3_1_note_is_optional(client, add_vehicle):
     assert response.json()["note"] is None
 
 
+def test_ac_3_1_blank_note_is_saved_as_no_note(client, add_vehicle):
+    vehicle = add_vehicle(days=120)
+
+    for blank in ("", "   "):
+        response = client.post(actions_url(vehicle.id), json=body(note=blank))
+        assert response.status_code == 201
+        assert response.json()["note"] is None
+
+
 def test_ac_3_1_name_and_note_limits(client, add_vehicle):
     vehicle = add_vehicle(days=120)
 
