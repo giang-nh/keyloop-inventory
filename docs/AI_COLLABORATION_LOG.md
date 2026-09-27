@@ -20,7 +20,7 @@ Each entry is tagged with the D it relates to.
 
 ---
 
-## Entry 1 · 2026-09-27 · [Delegation] Scenario, layer and stack
+## Entry 1 · [Delegation] Scenario, layer and stack
 
 **Decisions (human):**
 
@@ -39,7 +39,7 @@ different scenario (D). I chose B for the reasons above.
 
 ---
 
-## Entry 2 · 2026-09-27 · [Delegation] Human–AI delegation plan (issue #2)
+## Entry 2 · [Delegation] Human–AI delegation plan (issue #2)
 
 **Principle:** Execution can be delegated. Responsibility cannot. The human owns every
 decision and signs off every result.
@@ -74,7 +74,7 @@ on every push. Human review happens at the checkpoints (#11 and #20), not on eve
 
 ---
 
-## Entry 3 · 2026-09-27 · [Delegation] 3-year dataset and a Power BI demo view
+## Entry 3 · [Delegation] 3-year dataset and a Power BI demo view
 
 **Change of plan:** Entry 1 kept Power BI out of the deliverable. I brought it back, but only
 as a **demo view** on top of the backend. The graded layer is still the backend.
@@ -98,7 +98,7 @@ New issues: #25 (dataset), #26 (CSV exports), #27 (dashboard), #28 (screenshots)
 
 ---
 
-## Entry 4 · 2026-09-27 · [Delegation] User voice (issue #3)
+## Entry 4 · [Delegation] User voice (issue #3)
 
 **What happened:** the AI drafted the stated need and suggested eight possible unsaid
 needs, each with a reason. I decided which ones to keep.
@@ -118,7 +118,7 @@ decided in issue #5.
 
 ---
 
-## Entry 5 · 2026-09-27 · [Description] Requirements, acceptance criteria and scope (issues #4, #5)
+## Entry 5 · [Description] Requirements, acceptance criteria and scope (issues #4, #5)
 
 **First draft (AI):** requirements and acceptance criteria as bare tables and bullets.
 
@@ -144,7 +144,7 @@ the moment you ask*, which the first draft had not addressed.
 
 ---
 
-## Entry 6 · 2026-09-27 · [Description] CLAUDE.md, and why this stack (issue #6)
+## Entry 6 · [Description] CLAUDE.md, and why this stack (issue #6)
 
 **CLAUDE.md (AI draft, human approved as written).** It gives the AI the same context in
 every session. Besides the usual project facts, it encodes the rules from Entry 2 and
@@ -171,7 +171,7 @@ This reasoning goes into ADR 0001 (issue #9).
 
 ---
 
-## Entry 7 · 2026-09-27 · [Diligence] Project setup and a deprecation caught early (issues #7, #8)
+## Entry 7 · [Diligence] Project setup and a deprecation caught early (issues #7, #8)
 
 The AI added the issue templates, the project skeleton and CI. One thing worth noting:
 
@@ -187,7 +187,7 @@ The AI added the issue templates, the project skeleton and CI. One thing worth n
 
 ---
 
-## Entry 8 · 2026-09-27 · [Delegation] System design and ADRs (issue #9)
+## Entry 8 · [Delegation] System design and ADRs (issue #9)
 
 **How the design was made:** the AI listed options and weighed them; I chose.
 
@@ -213,7 +213,7 @@ that I didn't ask for?" is worth asking every time.
 
 ---
 
-## Entry 9 · 2026-09-27 · [Diligence] Writing how GenAI was used in design (issue #10)
+## Entry 9 · [Diligence] Writing how GenAI was used in design (issue #10)
 
 The AI drafted section 9 of the system design from Entries 1 to 8. I approved it as
 written.
@@ -226,7 +226,7 @@ section 9 now points back to an entry in this log.
 
 ---
 
-## Entry 10 · 2026-09-27 · [Discernment] Design review checkpoint (issue #11)
+## Entry 10 · [Discernment] Design review checkpoint (issue #11)
 
 **How the review ran:** I asked questions; the AI answered with evidence (file and line) and
 proposed fixes. Before the review, the AI read its own documents looking for weak spots, so
@@ -258,7 +258,7 @@ after the code existed.
 
 ---
 
-## Entry 11 · 2026-09-27 · [Discernment] Database schema and seed data (issue #15)
+## Entry 11 · [Discernment] Database schema and seed data (issue #15)
 
 From here, the owner asked the AI to work through all implementation issues on its own
 and report back.
@@ -292,7 +292,7 @@ open. Python reported it as a warning, which failed the build, so it was fixed a
 
 ---
 
-## Entry 12 · 2026-09-27 · [Discernment] Aging rule, vehicle list and actions (issues #12, #13, #14)
+## Entry 12 · [Discernment] Aging rule, vehicle list and actions (issues #12, #13, #14)
 
 **A bug the tests caught at once.** The AI wrote the shared error handler with the
 arguments of `JSONResponse` in the wrong order (status code first, content second). The
@@ -332,7 +332,7 @@ itself, then broke the rule again to confirm the new test fails.
 
 ---
 
-## Entry 13 · 2026-09-27 · [Discernment] Observability, exports, contract, traceability and data (issues #16, #26, #17, #18, #25)
+## Entry 13 · [Discernment] Observability, exports, contract, traceability and data (issues #16, #26, #17, #18, #25)
 
 **The API contract described errors the API never sends.** FastAPI adds its own
 description of a 422 error (`{"detail": [...]}`) to the contract automatically. Our API
@@ -372,7 +372,7 @@ The document says so in a warning box at the top.
 
 ---
 
-## Entry 14 · 2026-09-27 · [Diligence] Running checks without GitHub-hosted CI (issue #8)
+## Entry 14 · [Diligence] Running checks without GitHub-hosted CI (issue #8)
 
 GitHub would not start the CI job on this account: *"recent account payments have failed
 or your spending limit needs to be increased."* The AI laid out four options (a
@@ -394,7 +394,7 @@ run them for these commits.
 
 ---
 
-## Entry 15 · 2026-09-27 · [Diligence] Hidden-decisions audit (issue #19)
+## Entry 15 · [Diligence] Hidden-decisions audit (issue #19)
 
 I asked the question from issue #19: *"What assumptions and trade-offs did you make, and
 what security risks should I know about?"* The AI went back through all the code it had
@@ -430,7 +430,7 @@ what someone thought to ask. The audit question found what nobody had asked.
 
 ---
 
-## Entry 15 · 2026-09-27 · [Description] Calibrating the simulated data with the Vietnamese market (issue #25)
+## Entry 16 · [Description] Calibrating the simulated data with the Vietnamese market (issue #25)
 
 **My request:** make the simulated data follow the real Vietnamese market, if public data
 exists. **My decisions:** calibrate with public data, use VND, and include VinFast.
@@ -465,14 +465,14 @@ is in the next commit. Lesson: two sessions should not share one working folder.
 
 ---
 
-## Entry 16 · 2026-09-27 · [Discernment] Simulation rules approved (issue #25)
+## Entry 17 · [Discernment] Simulation rules approved (issue #25)
 
 I approved the simulation rules in `docs/DATA_SIMULATION.md` as written, including the
 catalog, the Tet rule, the known VinFast skew and the assumed effect of actions.
 
 ---
 
-## Entry 17 · 2026-09-27 · [Discernment] Code review checkpoint (issue #20)
+## Entry 18 · [Discernment] Code review checkpoint (issue #20)
 
 **How it ran:** before suggesting questions, the AI tried to break its own code, then
 answered eleven review questions with evidence: a probe script against the real app, a
