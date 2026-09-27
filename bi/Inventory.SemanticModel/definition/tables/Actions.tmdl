@@ -1,0 +1,125 @@
+/// FACT TABLE - one row per recorded action (actions.csv from GET /api/v1/exports/actions.csv).
+/// Actions are never changed or deleted (SPEC Step 3), so this is the full history.
+/// Filtered by Vehicles through [Vehicle ID], so the dealership, make and model filters apply here
+/// too.
+table Actions
+	lineageTag: b2000000-0000-4000-8000-000000000000
+
+	/// Action ID. Gets bigger as actions are recorded.
+	column 'Action ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: b2000000-0000-4000-8000-000000000001
+		summarizeBy: none
+		sourceColumn: Action ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The vehicle the action is about. Links to Vehicles[Vehicle ID].
+	column 'Vehicle ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b2000000-0000-4000-8000-000000000002
+		summarizeBy: none
+		sourceColumn: Vehicle ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Vehicle Identification Number of the car.
+	column VIN
+		dataType: string
+		lineageTag: b2000000-0000-4000-8000-000000000003
+		summarizeBy: none
+		sourceColumn: VIN
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dealership ID (hidden). Filter by Vehicles[Dealership] instead.
+	column 'Dealership ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b2000000-0000-4000-8000-000000000004
+		summarizeBy: none
+		sourceColumn: Dealership ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// One of the six action types (SPEC D-7), for example UNDER_REVIEW.
+	column 'Action Type'
+		dataType: string
+		lineageTag: b2000000-0000-4000-8000-000000000005
+		summarizeBy: none
+		sourceColumn: Action Type
+
+		annotation SummarizationSetBy = Automatic
+
+	/// When the action was recorded, in UTC. Set by the service, never by the client (SPEC D-12).
+	column 'Created At (UTC)'
+		dataType: dateTime
+		formatString: yyyy-mm-dd hh:nn
+		lineageTag: b2000000-0000-4000-8000-000000000006
+		summarizeBy: none
+		sourceColumn: Created At (UTC)
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date part of [Created At (UTC)].
+	column 'Action Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: b2000000-0000-4000-8000-000000000007
+		summarizeBy: none
+		sourceColumn: Action Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Name the manager typed when recording the action (SPEC D-9).
+	column 'Created By'
+		dataType: string
+		lineageTag: b2000000-0000-4000-8000-000000000008
+		summarizeBy: none
+		sourceColumn: Created By
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The manager's note. Empty when none. A note that starts with = + - or @ arrives with a leading
+	/// apostrophe: the export adds it so spreadsheets do not run the note as a formula.
+	column Note
+		dataType: string
+		lineageTag: b2000000-0000-4000-8000-000000000009
+		summarizeBy: none
+		sourceColumn: Note
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Actions = m
+		mode: import
+		queryGroup: 'export csv'
+		source =
+				let
+				    Source = Csv.Document(File.Contents(CsvFolder & "\actions.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    // An empty cell in the CSV means "no value" (for example no note).
+				    #"Empty As Null" = Table.ReplaceValue(#"Promoted Headers", "", null, Replacer.ReplaceValue, Table.ColumnNames(#"Promoted Headers")),
+				    #"Renamed Columns" = Table.RenameColumns(#"Empty As Null", {
+				        {"action_id", "Action ID"}, {"vehicle_id", "Vehicle ID"}, {"vin", "VIN"},
+				        {"dealership_id", "Dealership ID"}, {"action_type", "Action Type"},
+				        {"created_at", "Created At (UTC)"}, {"created_by", "Created By"}, {"note", "Note"}}),
+				    // "2026-09-27T08:15:00Z" -> a plain date and time, still in UTC.
+				    #"Parsed Time" = Table.TransformColumns(#"Renamed Columns", {{"Created At (UTC)", each DateTimeZone.RemoveZone(DateTimeZone.FromText(_)), type datetime}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Parsed Time", {
+				        {"Action ID", Int64.Type}, {"Vehicle ID", Int64.Type}, {"VIN", type text},
+				        {"Dealership ID", Int64.Type}, {"Action Type", type text},
+				        {"Created By", type text}, {"Note", type text}}, "en-US"),
+				    #"Added Action Date" = Table.AddColumn(#"Changed Type", "Action Date", each DateTime.Date([#"Created At (UTC)"]), type date)
+				in
+				    #"Added Action Date"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

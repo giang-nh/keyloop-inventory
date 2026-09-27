@@ -1,0 +1,48 @@
+/// DATE DIMENSION - the date a car was sold. Linked to Vehicles[Sold Date]. Cars still in stock
+/// have no sold date, so they drop out of any chart that uses this table on its axis.
+table 'Sold Calendar'
+	lineageTag: b4000000-0000-4000-8000-000000000000
+
+	/// The day the car was sold.
+	column 'Sold Day'
+		formatString: yyyy-mm-dd
+		lineageTag: b4000000-0000-4000-8000-000000000001
+		summarizeBy: none
+		sourceColumn: DateTable[Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Year-month code (yyyyMM, hidden) - used to sort [Sold Month] into real time order.
+	column 'Sold ym'
+		isHidden
+		formatString: 0
+		lineageTag: b4000000-0000-4000-8000-000000000002
+		summarizeBy: none
+		sourceColumn: DateTable[ym]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Year the car was sold.
+	column 'Sold Year'
+		formatString: 0
+		lineageTag: b4000000-0000-4000-8000-000000000003
+		summarizeBy: none
+		sourceColumn: DateTable[Year]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Month the car was sold, as YYYY/MM. Sorted by [Sold ym].
+	column 'Sold Month'
+		lineageTag: b4000000-0000-4000-8000-000000000004
+		summarizeBy: none
+		sourceColumn: DateTable[Year Month]
+		sortByColumn: 'Sold ym'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Sold Calendar' = calculated
+		mode: import
+		source = DateTable
+

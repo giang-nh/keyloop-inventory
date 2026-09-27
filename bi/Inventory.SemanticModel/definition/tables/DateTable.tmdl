@@ -1,0 +1,64 @@
+/// THE BASE CALENDAR (hidden) - date dimensions are copies of this table. Not used directly in
+/// reports.
+table DateTable
+	isHidden
+	lineageTag: b3000000-0000-4000-8000-000000000000
+
+	/// The day - primary key of the date dimension. One row per day, continuous from 2020-01-01 to
+	/// 2030-12-31.
+	column Date
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: b3000000-0000-4000-8000-000000000001
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Year-month code (yyyyMM) - used to sort month labels into real time order.
+	column ym
+		isHidden
+		formatString: 0
+		lineageTag: b3000000-0000-4000-8000-000000000002
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [ym]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Year, for example 2026.
+	column Year
+		isHidden
+		formatString: 0
+		lineageTag: b3000000-0000-4000-8000-000000000003
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Year/month label in YYYY/MM form - for chart axes.
+	column 'Year Month'
+		isHidden
+		lineageTag: b3000000-0000-4000-8000-000000000004
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year Month]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DateTable = calculated
+		mode: import
+		source = ```
+				VAR StartDate = DATE ( 2020, 1, 1 )
+				VAR EndDate = DATE ( 2030, 12, 31 )
+				RETURN
+				ADDCOLUMNS (
+				    CALENDAR ( StartDate, EndDate ),
+				    "ym", YEAR ( [Date] ) * 100 + MONTH ( [Date] ),
+				    "Year", YEAR ( [Date] ),
+				    "Year Month", FORMAT ( [Date], "YYYY/MM" )
+				)
+				```
+

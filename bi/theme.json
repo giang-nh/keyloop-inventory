@@ -1,0 +1,55 @@
+{
+  "name": "Keyloop_Inventory",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": true,
+            "radius": 5
+          }
+        ],
+        "padding": [
+          {
+            "show": true,
+            "top": 5,
+            "bottom": 5,
+            "left": 5,
+            "right": 5
+          }
+        ],
+        "labels": [
+          {
+            "show": true,
+            "labelDisplayUnits": 0,
+            "labelPrecision": 0
+          }
+        ]
+      }
+    },
+    "group": {
+      "*": {
+        "padding": [
+          {
+            "show": true,
+            "top": 10,
+            "bottom": 10,
+            "left": 10,
+            "right": 10
+          }
+        ],
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#744EC2"
+              }
+            },
+            "transparency": 80
+          }
+        ]
+      }
+    }
+  }
+}

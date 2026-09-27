@@ -1,0 +1,116 @@
+/// An empty table whose only job is to hold all the measures in one place. It carries no data.
+/// No measure works out aging: counts by status read Vehicles[Stock Status], which the API sent.
+table _Measures
+	lineageTag: b5000000-0000-4000-8000-000000000000
+
+	/// Number of cars in stock now (at the time of the export). Sold cars are not counted.
+	measure 'Vehicles In Stock' = CALCULATE ( COUNTROWS ( Vehicles ), Vehicles[In Stock] = TRUE () )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000001
+
+	/// Number of cars in stock with status "aging" (more than 90 days, as decided by the API).
+	measure 'Aging Vehicles' = CALCULATE ( COUNTROWS ( Vehicles ), Vehicles[Stock Status] = "aging" )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000002
+
+	/// Number of cars in stock with status "approaching" (close to aging, as decided by the API).
+	measure 'Approaching Vehicles' = CALCULATE ( COUNTROWS ( Vehicles ), Vehicles[Stock Status] = "approaching" )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000003
+
+	/// Number of cars in stock with status "unknown": the stock-in date is missing or cannot be right
+	/// (SPEC D-6). These need their data fixed.
+	measure 'Unknown Status Vehicles' = CALCULATE ( COUNTROWS ( Vehicles ), Vehicles[Stock Status] = "unknown" )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000004
+
+	/// Share of the cars in stock that are aging.
+	measure 'Aging Share' = DIVIDE ( [Aging Vehicles], [Vehicles In Stock] )
+		formatString: 0.0%
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000005
+
+	/// Sum of list prices of all cars in stock, in VND. A measure of size, not an accounting value
+	/// (SPEC D-10).
+	measure 'Stock Value (VND)' = CALCULATE ( SUM ( Vehicles[Price (VND)] ), Vehicles[In Stock] = TRUE () )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000006
+
+	/// Money tied up in aging stock: sum of list prices of aging cars, in VND (SPEC D-10).
+	measure 'Aging Value (VND)' = CALCULATE ( SUM ( Vehicles[Price (VND)] ), Vehicles[Stock Status] = "aging" )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000007
+
+	/// Average days in stock of the cars in stock now. Cars with an unknown stock-in date are left
+	/// out, because they have no days in stock.
+	measure 'Average Days In Stock' = CALCULATE ( AVERAGE ( Vehicles[Days In Stock] ), Vehicles[In Stock] = TRUE () )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: b5000000-0000-4000-8000-000000000008
+
+	/// Number of vehicle records, in stock and sold.
+	measure 'All Vehicles' = COUNTROWS ( Vehicles )
+		formatString: #,0
+		displayFolder: Sales
+		lineageTag: b5000000-0000-4000-8000-000000000009
+
+	/// Number of cars sold. On a chart by 'Sold Calendar', this is cars sold in that period.
+	measure 'Vehicles Sold' = CALCULATE ( COUNTROWS ( Vehicles ), Vehicles[In Stock] = FALSE () )
+		formatString: #,0
+		displayFolder: Sales
+		lineageTag: b5000000-0000-4000-8000-000000000010
+
+	/// Share of vehicles that have been sold, out of all vehicles in the current filter.
+	measure 'Sold Share' = DIVIDE ( [Vehicles Sold], [All Vehicles] )
+		formatString: 0.0%
+		displayFolder: Sales
+		lineageTag: b5000000-0000-4000-8000-000000000011
+
+	/// Average days from arrival to sale, for sold cars (SPEC D-13). The API works out each car's
+	/// days; this only averages them.
+	measure 'Average Days To Sell' = CALCULATE ( AVERAGE ( Vehicles[Days In Stock] ), Vehicles[In Stock] = FALSE () )
+		formatString: #,0
+		displayFolder: Sales
+		lineageTag: b5000000-0000-4000-8000-000000000012
+
+	/// Number of actions recorded.
+	measure 'Actions Recorded' = COUNTROWS ( Actions )
+		formatString: #,0
+		displayFolder: Actions
+		lineageTag: b5000000-0000-4000-8000-000000000013
+
+	/// Number of vehicles with at least one recorded action.
+	measure 'Vehicles With Action' = CALCULATE ( COUNTROWS ( Vehicles ), Vehicles[Has Action] = "With action" )
+		formatString: #,0
+		displayFolder: Actions
+		lineageTag: b5000000-0000-4000-8000-000000000014
+
+	/// For sold cars with an action: average days from the first action to the sale.
+	measure 'Average Days From First Action To Sale' = AVERAGE ( Vehicles[Days From First Action To Sale] )
+		formatString: #,0
+		displayFolder: Actions
+		lineageTag: b5000000-0000-4000-8000-000000000015
+
+	/// Empty technical column, present only so Power BI accepts _Measures as a table. Hidden, never
+	/// used.
+	column Value
+		isHidden
+		lineageTag: b5000000-0000-4000-8000-000000000099
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = calculated
+		mode: import
+		source = {BLANK()}
+
+	annotation PBI_ResultType = Table
+

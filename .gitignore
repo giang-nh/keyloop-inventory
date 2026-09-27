@@ -26,6 +26,8 @@ htmlcov/
 # Power BI project: local-only files
 bi/**/.pbi/localSettings.json
 bi/**/.pbi/cache.abf
+# CSV files downloaded from the API for the dashboard (generated data, see bi/README.md)
+bi/data/
 
 # Editors and OS
 .vscode/

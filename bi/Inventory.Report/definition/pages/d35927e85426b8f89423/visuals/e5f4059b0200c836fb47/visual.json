@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "e5f4059b0200c836fb47",
+  "position": {
+    "x": 16,
+    "y": 80,
+    "z": 500,
+    "height": 48,
+    "width": 1248,
+    "tabOrder": 500
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Read with care: managers act on cars that are already old or hard to sell, so cars with an action are not a fair comparison with cars without one. This shows what happened, not what caused it.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "fontStyle": "italic"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

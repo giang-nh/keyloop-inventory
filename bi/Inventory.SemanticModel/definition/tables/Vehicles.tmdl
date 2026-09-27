@@ -1,0 +1,276 @@
+/// FACT TABLE - one row per vehicle per stay in stock, in stock and sold (vehicles.csv from
+/// GET /api/v1/exports/vehicles.csv).
+/// Days in stock and stock status come from the API as they are. The dashboard never works out
+/// aging on its own (SPEC R4), so the dashboard and the API can never disagree.
+table Vehicles
+	lineageTag: b1000000-0000-4000-8000-000000000000
+
+	/// Vehicle ID. One ID per stay in stock, so a car that came back has two IDs.
+	column 'Vehicle ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000001
+		summarizeBy: none
+		sourceColumn: Vehicle ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Vehicle Identification Number. Can repeat if a car came back (SPEC D-11).
+	column VIN
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000002
+		summarizeBy: none
+		sourceColumn: VIN
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dealership ID (hidden). Use [Dealership] in reports.
+	column 'Dealership ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000003
+		summarizeBy: none
+		sourceColumn: Dealership ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dealership name.
+	column Dealership
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000004
+		summarizeBy: none
+		sourceColumn: Dealership
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Make, for example Toyota.
+	column Make
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000005
+		summarizeBy: none
+		sourceColumn: Make
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Model, for example Vios.
+	column Model
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000006
+		summarizeBy: none
+		sourceColumn: Model
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Model year, for example 2025.
+	column 'Model Year'
+		dataType: int64
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000007
+		summarizeBy: none
+		sourceColumn: Model Year
+
+		annotation SummarizationSetBy = Automatic
+
+	/// List price in Vietnamese dong (VND). A measure of size, not an accounting value (SPEC D-10).
+	column 'Price (VND)'
+		dataType: int64
+		formatString: #,0
+		lineageTag: b1000000-0000-4000-8000-000000000008
+		summarizeBy: none
+		sourceColumn: Price (VND)
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the car arrived. Empty when it is not known.
+	column 'Stock In Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: b1000000-0000-4000-8000-000000000009
+		summarizeBy: none
+		sourceColumn: Stock In Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Date the car was sold. Empty while it is in stock. Linked to 'Sold Calendar'.
+	column 'Sold Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: b1000000-0000-4000-8000-000000000010
+		summarizeBy: none
+		sourceColumn: Sold Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// True while the car is in stock, false once sold.
+	column 'In Stock'
+		dataType: boolean
+		lineageTag: b1000000-0000-4000-8000-000000000011
+		summarizeBy: none
+		sourceColumn: In Stock
+
+		annotation SummarizationSetBy = Automatic
+
+	/// From the API. In stock: days from arrival to the day of the export. Sold: days from arrival to
+	/// the sale (SPEC D-13). Empty when the stock-in date is not known.
+	column 'Days In Stock'
+		dataType: int64
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000012
+		summarizeBy: none
+		sourceColumn: Days In Stock
+
+		annotation SummarizationSetBy = Automatic
+
+	/// From the API: fresh, approaching, aging or unknown. Empty for sold cars (SPEC D-5).
+	/// Sorted by [Stock Status Order].
+	column 'Stock Status'
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000013
+		summarizeBy: none
+		sourceColumn: Stock Status
+		sortByColumn: 'Stock Status Order'
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Sort order for [Stock Status] (hidden): fresh 1, approaching 2, aging 3, unknown 4. It only
+	/// orders the labels the API sent; it does not decide any status.
+	column 'Stock Status Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000014
+		summarizeBy: none
+		sourceColumn: Stock Status Order
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID of the most recent action for this car (hidden). Same rule as the API (ADR 0004): newest
+	/// time first, and the higher action ID wins a tie. Empty when the car has no action.
+	column 'Latest Action ID' =
+			VAR Acts = RELATEDTABLE ( Actions )
+			VAR LatestAt = MAXX ( Acts, Actions[Created At (UTC)] )
+			RETURN
+			    MAXX ( FILTER ( Acts, Actions[Created At (UTC)] = LatestAt ), Actions[Action ID] )
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000015
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Type of the most recent action, for example PRICE_REDUCTION_PLANNED. Empty when none.
+	column 'Latest Action' = LOOKUPVALUE ( Actions[Action Type], Actions[Action ID], Vehicles[Latest Action ID] )
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000016
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// When the most recent action was recorded, in UTC.
+	column 'Latest Action At (UTC)' = LOOKUPVALUE ( Actions[Created At (UTC)], Actions[Action ID], Vehicles[Latest Action ID] )
+		dataType: dateTime
+		formatString: yyyy-mm-dd hh:nn
+		lineageTag: b1000000-0000-4000-8000-000000000017
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Name of the manager who recorded the most recent action.
+	column 'Latest Action By' = LOOKUPVALUE ( Actions[Created By], Actions[Action ID], Vehicles[Latest Action ID] )
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000018
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID of the first action for this car (hidden): oldest time first, the lower action ID wins a
+	/// tie. Empty when the car has no action.
+	column 'First Action ID' =
+			VAR Acts = RELATEDTABLE ( Actions )
+			VAR FirstAt = MINX ( Acts, Actions[Created At (UTC)] )
+			RETURN
+			    MINX ( FILTER ( Acts, Actions[Created At (UTC)] = FirstAt ), Actions[Action ID] )
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000019
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Type of the first action recorded for this car. "No action" when there is none, so cars
+	/// without an action still show up as their own group in charts.
+	column 'First Action' =
+			VAR T = LOOKUPVALUE ( Actions[Action Type], Actions[Action ID], Vehicles[First Action ID] )
+			RETURN
+			    IF ( ISBLANK ( T ), "No action", T )
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000020
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// "With action" when at least one action was recorded for this car, otherwise "No action".
+	column 'Has Action' = IF ( ISBLANK ( Vehicles[First Action ID] ), "No action", "With action" )
+		dataType: string
+		lineageTag: b1000000-0000-4000-8000-000000000021
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Sold cars with an action only: whole days from the date of the first action (UTC) to the
+	/// sale. Empty otherwise. This is a plain date difference, not the aging rule.
+	column 'Days From First Action To Sale' =
+			VAR FirstAt = LOOKUPVALUE ( Actions[Created At (UTC)], Actions[Action ID], Vehicles[First Action ID] )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( FirstAt ) && NOT ISBLANK ( Vehicles[Sold Date] ),
+			        DATEDIFF ( TRUNC ( FirstAt ), Vehicles[Sold Date], DAY )
+			    )
+		dataType: int64
+		formatString: 0
+		lineageTag: b1000000-0000-4000-8000-000000000022
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Vehicles = m
+		mode: import
+		queryGroup: 'export csv'
+		source =
+				let
+				    Source = Csv.Document(File.Contents(CsvFolder & "\vehicles.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    // An empty cell in the CSV means "no value" (for example no sold date yet).
+				    #"Empty As Null" = Table.ReplaceValue(#"Promoted Headers", "", null, Replacer.ReplaceValue, Table.ColumnNames(#"Promoted Headers")),
+				    #"Renamed Columns" = Table.RenameColumns(#"Empty As Null", {
+				        {"vehicle_id", "Vehicle ID"}, {"vin", "VIN"}, {"dealership_id", "Dealership ID"},
+				        {"dealership_name", "Dealership"}, {"make", "Make"}, {"model", "Model"},
+				        {"model_year", "Model Year"}, {"price", "Price (VND)"}, {"stock_in_date", "Stock In Date"},
+				        {"sold_date", "Sold Date"}, {"in_stock", "In Stock"}, {"days_in_stock", "Days In Stock"},
+				        {"stock_status", "Stock Status"}}),
+				    #"In Stock As Logical" = Table.TransformColumns(#"Renamed Columns", {{"In Stock", each _ = "true", type logical}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"In Stock As Logical", {
+				        {"Vehicle ID", Int64.Type}, {"VIN", type text}, {"Dealership ID", Int64.Type},
+				        {"Dealership", type text}, {"Make", type text}, {"Model", type text},
+				        {"Model Year", Int64.Type}, {"Price (VND)", Int64.Type}, {"Stock In Date", type date},
+				        {"Sold Date", type date}, {"Days In Stock", Int64.Type}, {"Stock Status", type text}}, "en-US"),
+				    #"Added Status Order" = Table.AddColumn(#"Changed Type", "Stock Status Order", each
+				        if [Stock Status] = "fresh" then 1
+				        else if [Stock Status] = "approaching" then 2
+				        else if [Stock Status] = "aging" then 3
+				        else if [Stock Status] = "unknown" then 4
+				        else null, Int64.Type)
+				in
+				    #"Added Status Order"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+
