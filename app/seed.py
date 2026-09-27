@@ -63,11 +63,13 @@ def _days_before(reference_date: date, days: int | None) -> date | None:
 
 
 def seed(session: Session, reference_date: date) -> bool:
-    """Add the seed data. Returns False and changes nothing if it is already there."""
-    already_seeded = session.scalar(
-        select(func.count()).select_from(Dealership).where(Dealership.name == DEALERSHIPS[0][0])
-    )
-    if already_seeded:
+    """Add the seed data to an empty database.
+
+    Returns False and changes nothing if the database already has any data: the seed data
+    or other data, such as the 3-year generated dataset. Mixing the two would make both
+    harder to reason about.
+    """
+    if session.scalar(select(func.count()).select_from(Dealership)):
         return False
 
     dealerships = [Dealership(name=name, city=city) for name, city in DEALERSHIPS]

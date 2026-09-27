@@ -32,7 +32,12 @@ def main() -> None:
     with make_session_factory(engine)() as session:
         added = seed(session, args.reference_date)
     engine.dispose()
-    print("Seed data added." if added else "Seed data is already there; nothing changed.")
+    print(
+        "Seed data added."
+        if added
+        else "The database already has data, so nothing was changed. "
+        "The seed only loads into an empty database."
+    )
 
 
 if __name__ == "__main__":

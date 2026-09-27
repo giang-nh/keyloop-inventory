@@ -35,6 +35,14 @@ def test_seed_includes_a_car_that_came_back_as_a_trade_in(session):
     assert sum(v.sold_date is None for v in stays) == 1
 
 
+def test_seed_does_nothing_when_the_database_already_has_other_data(session):
+    session.add(Dealership(name="Another Dealer", city="Hue"))
+    session.commit()
+
+    assert seed(session, REFERENCE_DATE) is False
+    assert session.scalar(select(func.count()).select_from(Vehicle)) == 0
+
+
 def test_seed_can_run_twice_without_duplicates(session):
     assert seed(session, REFERENCE_DATE) is True
     assert seed(session, REFERENCE_DATE + timedelta(days=3)) is False
