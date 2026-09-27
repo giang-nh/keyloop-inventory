@@ -141,3 +141,30 @@ step explains its reasons before its acceptance criteria. Assumptions are writte
 
 **Also added by the AI and accepted:** decision D-1, reading "real-time" as *correct at
 the moment you ask*, which the first draft had not addressed.
+
+---
+
+## Entry 6 · 2026-09-27 · [Description] CLAUDE.md, and why this stack (issue #6)
+
+**CLAUDE.md (AI draft, human approved as written).** It gives the AI the same context in
+every session. Besides the usual project facts, it encodes the rules from Entry 2 and
+guards against known AI habits:
+
+- Names the outdated APIs the AI must not use (FastAPI `on_event`, the legacy SQLAlchemy
+  `Query` API, Pydantic v1), because AI tools often use them with confidence.
+- After each task, the AI must list every assumption it made that the issue did not ask for.
+- Review answers must come with evidence: test output, a command, or a file and line.
+- The AI must push back when a request conflicts with the spec, and say how sure it is.
+
+**Why this stack.** While reviewing the draft I asked the AI why it recommended Python and
+FastAPI. Its answer leaned on my personal comfort with Python. I corrected the reasoning:
+my strongest background is Java enterprise. The stack should be chosen for the product and
+the team, not for me. So the decision rests on two stated assumptions:
+
+1. This is a new service, with no existing codebase to fit into.
+2. The team that will build and run it is strongest in Python.
+
+Given those, Python and FastAPI fit best: quick to build, the API contract is generated
+automatically, and testing is simple. Java with Spring Boot was considered and not chosen,
+because it does not match the assumed team and needs more setup for a small new service.
+This reasoning goes into ADR 0001 (issue #9).
