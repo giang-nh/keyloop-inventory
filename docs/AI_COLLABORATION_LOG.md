@@ -115,3 +115,29 @@ them keeps the user voice honest and keeps each decision in the right place.
 
 **Open question raised:** what counts as "close to 90 days" for the early warning. To be
 decided in issue #5.
+
+---
+
+## Entry 5 · 2026-09-27 · [Description] Requirements, acceptance criteria and scope (issues #4, #5)
+
+**First draft (AI):** requirements and acceptance criteria as bare tables and bullets.
+
+**My feedback:** the draft said *what* but not *why*. A reader could not follow the line
+from the user's problem to each requirement, or understand why things were left out.
+I asked for the spec to be rewritten as the story of how a person would think it through.
+
+**Second draft (AI):** `docs/SPEC.md` now follows the manager's own sequence: see the
+stock, find the problem cars, decide what to do, then look at the bigger picture. Each
+step explains its reasons before its acceptance criteria. Assumptions are written as
+*what was unclear, what we chose, why*. Every out-of-scope item has a reason.
+
+**Decisions (human):**
+
+- Early warning window: 76 to 90 days (accepted as proposed).
+- Action types: the six proposed types (accepted as proposed).
+- **Changed:** actions are allowed for `approaching` cars, not only `aging` ones. The AI
+  had proposed aging only, following the brief literally. I changed it because the point
+  of an early warning is to act before day 90; blocking actions there would defeat it.
+
+**Also added by the AI and accepted:** decision D-1, reading "real-time" as *correct at
+the moment you ask*, which the first draft had not addressed.
