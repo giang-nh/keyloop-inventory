@@ -185,3 +185,17 @@ def test_ac_3_7_actions_survive_a_restart(engine, database_url, add_vehicle):
         history = after_restart.get(actions_url(vehicle.id)).json()
 
     assert history == [saved]
+
+
+def test_ac_2_9_action_refused_for_a_future_stock_in_date_with_a_true_message(
+    client, add_vehicle
+):
+    vehicle = add_vehicle(days=-5)
+
+    response = client.post(actions_url(vehicle.id), json=body())
+
+    assert response.status_code == 422
+    error = response.json()["error"]
+    assert error["code"] == "vehicle_stock_in_date_invalid"
+    assert "in the future" in error["message"]
+    assert "no stock-in date" not in error["message"]

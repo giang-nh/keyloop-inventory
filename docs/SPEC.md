@@ -143,6 +143,7 @@ money is about to be tied up, which is what the early warning is for.
 | AC-2.5 | A vehicle with no stock-in date has no days in stock and the status `unknown`. It still appears in the list and is never counted as aging. |
 | AC-2.6 | The data loader rejects a vehicle whose stock-in date is after the reference date, and says which vehicle and why. |
 | AC-2.7 | Stock status applies only to vehicles in stock. Sold vehicles have no stock status. |
+| AC-2.9 | A vehicle in stock whose stock-in date is after the reference date (bad data that got past the loader) is treated like a missing date: status `unknown`, no days in stock, found by the `unknown` filter and by no days-in-stock filter. Recording an action for it returns error 422 with a message that says the date is in the future. |
 | AC-2.8 | A summary shows, for one dealership or for all: vehicles in stock, number `aging`, number `approaching`, the total price of `aging` vehicles, and the total price of `approaching` vehicles. |
 
 ### Step 3: "What am I going to do about it?"
@@ -191,7 +192,7 @@ its own, so the dashboard and the API can never disagree.
 
 | ID | Acceptance criterion |
 |---|---|
-| AC-4.1 | A vehicles CSV includes all vehicles, in stock and sold, with days in stock and stock status worked out by the same rule as the API. |
+| AC-4.1 | A vehicles CSV includes all vehicles, in stock and sold, with days in stock and stock status worked out by the same rule as the API. For a sold vehicle, days in stock is the number of days from arrival to sale (D-13). |
 | AC-4.2 | An actions CSV includes every recorded action. |
 | AC-4.3 | Both files have a header row, use ISO dates (YYYY-MM-DD), and their columns are listed in the API documentation. |
 
@@ -232,6 +233,12 @@ CSV export, because the trend view needs them.
 Missing: the car is shown with status `unknown`, never as zero days. In the future: the
 record is rejected when the data is loaded, with a clear message.
 
+The database itself cannot stop a future date (the check depends on today's date), so a
+bad record could still arrive another way, for example from another tool writing to the
+database. Such a car is treated like one with a missing date: `unknown` means *the
+stock-in date is missing or cannot be right*. It is shown, never hidden, so someone fixes
+it (AC-2.9). This was found in the code review (issue #20).
+
 **D-7 · Which action types can a manager record?**
 A fixed list, so the actions can be counted and compared:
 `PRICE_REDUCTION_PLANNED`, `MARKETING_PROMOTION`, `TRANSFER_TO_ANOTHER_DEALERSHIP`,
@@ -262,6 +269,19 @@ that and note it as a known limit in the system design.
 **D-12 · Who sets the time of an action?**
 The service does, when the action is saved. A client cannot backdate an action. This keeps
 the history trustworthy: the order of events is the order in which they were recorded.
+
+**D-13 · What does "days in stock" mean for a sold car in the CSV export?**
+The number of days from arrival to sale. It lets a reporting tool show how long cars took
+to sell. Sold cars still have no stock status (AC-2.7).
+
+**D-14 · What is "today" for an export?**
+The reference date is read once, when the export starts. A long export that runs past
+midnight uses the same date for every row, so the file is consistent.
+
+**D-15 · How far does the sample data go?**
+The data generator knows the Lunar New Year dates up to 2027. For a reference date after
+that, the sample data has no Tet slowdown. This affects only the simulated data, not the
+service.
 
 ---
 

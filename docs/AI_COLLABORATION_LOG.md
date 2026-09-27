@@ -469,3 +469,35 @@ is in the next commit. Lesson: two sessions should not share one working folder.
 
 I approved the simulation rules in `docs/DATA_SIMULATION.md` as written, including the
 catalog, the Tet rule, the known VinFast skew and the assumed effect of actions.
+
+---
+
+## Entry 17 · 2026-09-27 · [Discernment] Code review checkpoint (issue #20)
+
+**How it ran:** before suggesting questions, the AI tried to break its own code, then
+answered eleven review questions with evidence: a probe script against the real app, a
+40-request concurrency test on a live server, grep results, and earlier mutation checks.
+
+**What held up:** 40 simultaneous action requests on SQLite all succeeded (40 × 201, all
+saved); no outdated APIs; logs never contain notes or names; every error has one shape and
+a next step; the API answers the manager's four questions.
+
+**What did not:** one edge case, a car whose stock-in date is in the future. The loader
+stops such records, but the database cannot (the check depends on today's date). With one
+in the database:
+
+1. The list labelled it `unknown`, but the `unknown` filter did not find it: exactly the
+   label/filter drift that ADR 0003 promised could not happen.
+2. A `max_days` filter did find it, because its days in stock came out negative.
+3. Refusing an action for it said *"has no stock-in date"*, which was not true.
+
+The root cause was a choice the AI had made in #13 and reported, but that the spec never
+covered: treating a future date as `unknown`.
+
+**My decision:** widen `unknown` to mean *the date is missing or cannot be right* (SPEC D-6,
+new AC-2.9), make the filters agree, and give the refusal its own true message. I also
+asked for three code-level assumptions to be written into the spec (D-13 to D-15).
+
+**Proof the new tests matter:** run against the old code, 4 of the 11 new tests failed; on
+the new code all pass. One of them checks, through the API, that every label (including
+bad and missing dates) is found by its own filter.

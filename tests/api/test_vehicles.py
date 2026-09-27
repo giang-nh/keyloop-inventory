@@ -1,5 +1,6 @@
 """The vehicle list (R1) and the summary (R2). Test names include the criterion they prove."""
 
+import pytest
 from sqlalchemy import select
 
 from app.models import Dealership, Vehicle
@@ -207,3 +208,33 @@ def test_dealership_list(client, seeded):
     names = [d["name"] for d in client.get("/api/v1/dealerships").json()]
 
     assert names == ["Harbour Auto", "Lakeside Cars", "Riverside Motors"]
+
+
+def test_ac_2_9_future_stock_in_date_is_unknown_and_found_by_the_unknown_filter(
+    client, add_vehicle
+):
+    future = add_vehicle(days=-5, vin="FUTURE00000000001")
+
+    listed = client.get(LIST).json()["items"][0]
+    unknown = client.get(LIST, params={"status": "unknown"}).json()["items"]
+
+    assert (listed["id"], listed["stock_status"], listed["days_in_stock"]) == (
+        future.id, "unknown", None
+    )
+    assert [i["id"] for i in unknown] == [future.id]
+
+
+def test_ac_2_9_future_stock_in_date_matches_no_days_in_stock_filter(client, add_vehicle):
+    add_vehicle(days=-5, vin="FUTURE00000000001")
+
+    for params in ({"max_days": 10}, {"min_days": 0}, {"status": "fresh"}):
+        assert client.get(LIST, params=params).json()["total"] == 0, params
+
+
+@pytest.mark.parametrize("days_ago", [None, -5, 0, 75, 76, 90, 91, 400])
+def test_ac_2_9_every_label_is_found_by_its_own_filter(client, add_vehicle, days_ago):
+    """ADR 0003 promise, checked through the API, including bad and missing dates."""
+    add_vehicle(days=days_ago)
+    label = client.get(LIST).json()["items"][0]["stock_status"]
+
+    assert client.get(LIST, params={"status": label}).json()["total"] == 1

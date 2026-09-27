@@ -36,6 +36,13 @@ def _check_allowed(vehicle: Vehicle, reference_date: date) -> None:
     days, status = describe(vehicle, reference_date)
     if status in ACTIONABLE_STATUSES:
         return
+    if vehicle.stock_in_date is not None and vehicle.stock_in_date > reference_date:
+        raise ActionNotAllowedError(
+            "vehicle_stock_in_date_invalid",
+            f"Vehicle {vehicle.id} has a stock-in date in the future "
+            f"({vehicle.stock_in_date.isoformat()}), which cannot be right. "
+            "Fix its stock-in date first.",
+        )
     if days is None:
         raise ActionNotAllowedError(
             "vehicle_stock_in_date_unknown",

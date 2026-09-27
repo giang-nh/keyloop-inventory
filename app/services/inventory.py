@@ -8,7 +8,7 @@ import logging
 from dataclasses import dataclass
 from datetime import date
 
-from sqlalchemy import Select, case, func, select
+from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models import Vehicle, VehicleAction
@@ -77,8 +77,13 @@ def _filtered(filters: VehicleFilters, reference_date: date) -> Select:
         query = _between(
             query, *days_range_to_stock_in_dates(filters.min_days, filters.max_days, reference_date)
         )
+        # A stock-in date in the future has no days in stock, so it never matches (AC-2.9).
+        query = query.where(Vehicle.stock_in_date <= reference_date)
     if filters.status is StockStatus.UNKNOWN:
-        query = query.where(Vehicle.stock_in_date.is_(None))
+        # Unknown means the date is missing or cannot be right (SPEC D-6, AC-2.9).
+        query = query.where(
+            or_(Vehicle.stock_in_date.is_(None), Vehicle.stock_in_date > reference_date)
+        )
     elif filters.status is not None:
         query = _between(query, *stock_in_date_range(filters.status, reference_date))
     return query
