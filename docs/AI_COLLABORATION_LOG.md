@@ -71,3 +71,27 @@ on every push. Human review happens at the checkpoints (#11 and #20), not on eve
   the AI and checking its evidence, not by reading all the code.
 - *Architecture*: from "Human + AI" to "Human decides, AI advises". The AI gives options
   and evaluates them; I make the decision.
+
+---
+
+## Entry 3 · 2026-09-27 · [Delegation] 3-year dataset and a Power BI demo view
+
+**Change of plan:** Entry 1 kept Power BI out of the deliverable. I brought it back, but only
+as a **demo view** on top of the backend. The graded layer is still the backend.
+
+**Decisions (human):**
+
+- **Data:** generate three years of realistic data: arrivals, sales and action histories
+  across several dealerships. A single snapshot cannot show trends; three years can.
+- **How Power BI gets data:** through CSV export endpoints on the API. The aging rule stays
+  in one place (the backend), so the dashboard and the API cannot disagree.
+- **File format:** Power BI Project (`.pbip`), not a binary `.pbix`. The model and DAX
+  measures are text files, so they can be reviewed in Git like code.
+
+**AI's part:** listed and evaluated the options for each decision: CSV export vs. direct
+database connection vs. calling the JSON API; full history vs. current stock only;
+`.pbip` vs. `.pbix` vs. screenshots only. I chose from those options.
+
+**Knock-on effect:** sold vehicles are now in scope. The data model needs a vehicle status
+and a sold date, and aging applies only to vehicles still in stock (noted on issue #5).
+New issues: #25 (dataset), #26 (CSV exports), #27 (dashboard), #28 (screenshots).
