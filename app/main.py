@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import actions, inventory, vehicles
+from app.api import actions, exports, inventory, vehicles
 from app.api.errors import add_error_handlers
 from app.db import make_engine, make_session_factory
 from app.observability import add_observability
@@ -37,6 +37,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
     app.include_router(vehicles.router)
     app.include_router(actions.router)
     app.include_router(inventory.router)
+    app.include_router(exports.router)
     return app
 
 
