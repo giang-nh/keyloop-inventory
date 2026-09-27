@@ -3,7 +3,7 @@
 This document explains how `scripts/generate_data.py` builds three years of sample
 dealership data for the API demo and the Power BI dashboard.
 
-> **Status: proposed by the AI, waiting for the owner's approval (issue #25).**
+> **Status: approved by the owner on 2026-09-27 (issue #25).**
 
 ## Why simulated data
 

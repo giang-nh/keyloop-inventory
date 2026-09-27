@@ -462,3 +462,10 @@ up five lines of this change (the "in VND" wording in the API descriptions, the 
 description and the design document). The AI noticed when those files no longer showed as
 changed, checked the commit, and left the pushed history as it was. The rest of the change
 is in the next commit. Lesson: two sessions should not share one working folder.
+
+---
+
+## Entry 16 · 2026-09-27 · [Discernment] Simulation rules approved (issue #25)
+
+I approved the simulation rules in `docs/DATA_SIMULATION.md` as written, including the
+catalog, the Tet rule, the known VinFast skew and the assumed effect of actions.
