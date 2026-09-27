@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_reference_date, get_session
 from app.api.errors import ApiError
-from app.api.schemas import DealershipOut, InventorySummary
+from app.api.schemas import DealershipOut, InventorySummary, error_responses
 from app.models import Dealership
 from app.services.inventory import summary
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1", tags=["Inventory"])
     response_model=InventorySummary,
     summary="How much stock is aging or about to be",
     description="Counts and total list price of aging and approaching vehicles in stock.",
-    responses={404: {"description": "No dealership with this ID."}},
+    responses=error_responses(404, 422),
 )
 def summary_route(
     session: Annotated[Session, Depends(get_session)],

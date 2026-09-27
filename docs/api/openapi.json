@@ -1,0 +1,904 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Intelligent Inventory Dashboard API",
+    "description": "Helps dealership managers see their vehicle stock, find vehicles that have been in stock for more than 90 days, and record what to do about them.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Is the service up and can it reach the database?",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Metrics for a monitoring tool",
+        "operationId": "metrics_endpoint_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "List vehicles in stock",
+        "description": "Vehicles that are in stock, with filters. Vehicles with no stock-in date come first, then the most days in stock, then by ID. All filters must match.",
+        "operationId": "list_vehicles_route_api_v1_vehicles_get",
+        "parameters": [
+          {
+            "name": "dealership_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this dealership.",
+              "title": "Dealership Id"
+            },
+            "description": "Only this dealership."
+          },
+          {
+            "name": "make",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact make, any case. 'toyota' finds 'Toyota'.",
+              "title": "Make"
+            },
+            "description": "Exact make, any case. 'toyota' finds 'Toyota'."
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact model, any case.",
+              "title": "Model"
+            },
+            "description": "Exact model, any case."
+          },
+          {
+            "name": "min_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "At least this many days in stock (included).",
+              "title": "Min Days"
+            },
+            "description": "At least this many days in stock (included)."
+          },
+          {
+            "name": "max_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "At most this many days in stock (included).",
+              "title": "Max Days"
+            },
+            "description": "At most this many days in stock (included)."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/StockStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this stock status.",
+              "title": "Status"
+            },
+            "description": "Only this stock status."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Page size.",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Page size."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many vehicles to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "How many vehicles to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiclePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The input is not valid, or the request is not allowed for this vehicle.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles/{vehicle_id}": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get one vehicle",
+        "operationId": "get_vehicle_route_api_v1_vehicles__vehicle_id__get",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehicleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The input is not valid, or the request is not allowed for this vehicle.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles/{vehicle_id}/actions": {
+      "post": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "Record an action for a vehicle",
+        "description": "Record a status or planned action for a vehicle that is aging or approaching aging. Actions cannot be changed or deleted later. The service sets the time.",
+        "operationId": "record_action_route_api_v1_vehicles__vehicle_id__actions_post",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The input is not valid, or the request is not allowed for this vehicle.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "A vehicle's action history",
+        "description": "Every action recorded for the vehicle, newest first.",
+        "operationId": "list_actions_route_api_v1_vehicles__vehicle_id__actions_get",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActionOut"
+                  },
+                  "title": "Response List Actions Route Api V1 Vehicles  Vehicle Id  Actions Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The input is not valid, or the request is not allowed for this vehicle.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/summary": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "How much stock is aging or about to be",
+        "description": "Counts and total list price of aging and approaching vehicles in stock.",
+        "operationId": "summary_route_api_v1_inventory_summary_get",
+        "parameters": [
+          {
+            "name": "dealership_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One dealership. Leave out for all dealerships.",
+              "title": "Dealership Id"
+            },
+            "description": "One dealership. Leave out for all dealerships."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventorySummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The input is not valid, or the request is not allowed for this vehicle.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dealerships": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List dealerships",
+        "description": "Use these IDs for the dealership filter.",
+        "operationId": "dealerships_route_api_v1_dealerships_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DealershipOut"
+                  },
+                  "type": "array",
+                  "title": "Response Dealerships Route Api V1 Dealerships Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/vehicles.csv": {
+      "get": {
+        "tags": [
+          "Exports"
+        ],
+        "summary": "All vehicles as CSV",
+        "description": "Every vehicle, in stock and sold, for Power BI or Excel (Get Data > Web). Days in stock and status use the same rule as the API.\n\nColumns:\n\n- `vehicle_id`: Vehicle ID. One ID per stay in stock.\n- `vin`: Vehicle Identification Number. Can repeat if a car came back.\n- `dealership_id`: Dealership ID.\n- `dealership_name`: Dealership name.\n- `make`: Make.\n- `model`: Model.\n- `model_year`: Model year.\n- `price`: List price, whole currency units.\n- `stock_in_date`: Date the car arrived (YYYY-MM-DD). Empty if not known.\n- `sold_date`: Date the car was sold (YYYY-MM-DD). Empty while in stock.\n- `in_stock`: true or false.\n- `days_in_stock`: In stock: days from arrival to today. Sold: days from arrival to the sale. Empty if the stock-in date is not known.\n- `stock_status`: fresh, approaching, aging or unknown. Empty for sold cars.",
+        "operationId": "vehicles_export_api_v1_exports_vehicles_csv_get",
+        "responses": {
+          "200": {
+            "description": "A CSV file with a header row.",
+            "content": {
+              "text/csv": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/actions.csv": {
+      "get": {
+        "tags": [
+          "Exports"
+        ],
+        "summary": "All actions as CSV",
+        "description": "Every recorded action, for Power BI or Excel.\n\nColumns:\n\n- `action_id`: Action ID.\n- `vehicle_id`: Vehicle ID.\n- `vin`: Vehicle Identification Number.\n- `dealership_id`: Dealership ID.\n- `action_type`: One of the six action types.\n- `created_at`: When the action was recorded, UTC (YYYY-MM-DDTHH:MM:SSZ).\n- `created_by`: The manager's name.\n- `note`: The manager's note. Empty if none.",
+        "operationId": "actions_export_api_v1_exports_actions_csv_get",
+        "responses": {
+          "200": {
+            "description": "A CSV file with a header row.",
+            "content": {
+              "text/csv": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionIn": {
+        "properties": {
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType",
+            "description": "What the manager plans to do (SPEC D-7)."
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Created By",
+            "description": "The manager's name. There is no login."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Optional detail."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action_type",
+          "created_by"
+        ],
+        "title": "ActionIn"
+      },
+      "ActionOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "vehicle_id": {
+            "type": "integer",
+            "title": "Vehicle Id"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By",
+            "description": "The name of the manager who recorded the action."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the action was recorded, in UTC."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "vehicle_id",
+          "action_type",
+          "note",
+          "created_by",
+          "created_at"
+        ],
+        "title": "ActionOut"
+      },
+      "ActionType": {
+        "type": "string",
+        "enum": [
+          "PRICE_REDUCTION_PLANNED",
+          "MARKETING_PROMOTION",
+          "TRANSFER_TO_ANOTHER_DEALERSHIP",
+          "SEND_TO_AUCTION",
+          "UNDER_REVIEW",
+          "OTHER"
+        ],
+        "title": "ActionType",
+        "description": "The six action types a manager can record (SPEC D-7)."
+      },
+      "DealershipOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "city"
+        ],
+        "title": "DealershipOut"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "The input field with the problem."
+          },
+          "problem": {
+            "type": "string",
+            "title": "Problem"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "problem"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorInfo": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "A stable code for programs, for example vehicle_not_found."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "What went wrong and what to do next, for people."
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": "array",
+            "title": "Details",
+            "description": "One entry per invalid field, if any."
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "title": "ErrorInfo"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorInfo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "description": "The shape of every error response."
+      },
+      "InventorySummary": {
+        "properties": {
+          "dealership_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dealership Id",
+            "description": "Empty when the summary covers all dealerships."
+          },
+          "vehicles_in_stock": {
+            "type": "integer",
+            "title": "Vehicles In Stock"
+          },
+          "aging_count": {
+            "type": "integer",
+            "title": "Aging Count"
+          },
+          "approaching_count": {
+            "type": "integer",
+            "title": "Approaching Count"
+          },
+          "aging_value": {
+            "type": "integer",
+            "title": "Aging Value",
+            "description": "Total list price of aging vehicles."
+          },
+          "approaching_value": {
+            "type": "integer",
+            "title": "Approaching Value",
+            "description": "Total list price of approaching vehicles."
+          }
+        },
+        "type": "object",
+        "required": [
+          "dealership_id",
+          "vehicles_in_stock",
+          "aging_count",
+          "approaching_count",
+          "aging_value",
+          "approaching_value"
+        ],
+        "title": "InventorySummary"
+      },
+      "StockStatus": {
+        "type": "string",
+        "enum": [
+          "fresh",
+          "approaching",
+          "aging",
+          "unknown"
+        ],
+        "title": "StockStatus"
+      },
+      "VehicleOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "vin": {
+            "type": "string",
+            "title": "Vin"
+          },
+          "dealership_id": {
+            "type": "integer",
+            "title": "Dealership Id"
+          },
+          "dealership_name": {
+            "type": "string",
+            "title": "Dealership Name"
+          },
+          "make": {
+            "type": "string",
+            "title": "Make"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "model_year": {
+            "type": "integer",
+            "title": "Model Year"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price",
+            "description": "List price, in whole currency units."
+          },
+          "stock_in_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock In Date",
+            "description": "Empty when the date is not known."
+          },
+          "sold_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Date",
+            "description": "Empty while the vehicle is in stock."
+          },
+          "days_in_stock": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days In Stock",
+            "description": "Whole days from the stock-in date to today (UTC). Empty when the stock-in date is not known."
+          },
+          "stock_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StockStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "fresh (0-75 days), approaching (76-90), aging (over 90), or unknown (no stock-in date). Empty for sold vehicles."
+          },
+          "latest_action": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most recent action, if any."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "vin",
+          "dealership_id",
+          "dealership_name",
+          "make",
+          "model",
+          "model_year",
+          "price",
+          "stock_in_date",
+          "sold_date",
+          "days_in_stock",
+          "stock_status",
+          "latest_action"
+        ],
+        "title": "VehicleOut"
+      },
+      "VehiclePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "How many vehicles match the filters, across all pages."
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "VehiclePage"
+      }
+    }
+  }
+}

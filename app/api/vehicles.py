@@ -8,11 +8,13 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_reference_date, get_session
 from app.api.errors import ApiError
-from app.api.schemas import ActionOut, VehicleOut, VehiclePage
+from app.api.schemas import ActionOut, VehicleOut, VehiclePage, error_responses
 from app.services.aging import StockStatus
 from app.services.inventory import VehicleFilters, VehicleView, get_vehicle, list_vehicles
 
-router = APIRouter(prefix="/api/v1/vehicles", tags=["Vehicles"])
+router = APIRouter(
+    prefix="/api/v1/vehicles", tags=["Vehicles"], responses=error_responses(422)
+)
 
 MAX_PAGE_SIZE = 200
 
@@ -85,7 +87,7 @@ def list_vehicles_route(
     "/{vehicle_id}",
     response_model=VehicleOut,
     summary="Get one vehicle",
-    responses={404: {"description": "No vehicle with this ID."}},
+    responses=error_responses(404, 422),
 )
 def get_vehicle_route(
     vehicle_id: int,

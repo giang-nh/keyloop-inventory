@@ -8,6 +8,32 @@ from app.models import ActionType
 from app.services.aging import StockStatus
 
 
+class ErrorDetail(BaseModel):
+    field: str = Field(description="The input field with the problem.")
+    problem: str
+
+
+class ErrorInfo(BaseModel):
+    code: str = Field(description="A stable code for programs, for example vehicle_not_found.")
+    message: str = Field(description="What went wrong and what to do next, for people.")
+    details: list[ErrorDetail] = Field(description="One entry per invalid field, if any.")
+
+
+class ErrorResponse(BaseModel):
+    """The shape of every error response."""
+
+    error: ErrorInfo
+
+
+def error_responses(*status_codes: int) -> dict:
+    """Document these error statuses with the real error shape in the API contract."""
+    meaning = {
+        404: "Not found.",
+        422: "The input is not valid, or the request is not allowed for this vehicle.",
+    }
+    return {code: {"model": ErrorResponse, "description": meaning[code]} for code in status_codes}
+
+
 class DealershipOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

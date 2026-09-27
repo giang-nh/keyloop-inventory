@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_now, get_reference_date, get_session
 from app.api.errors import ApiError
-from app.api.schemas import ActionIn, ActionOut
+from app.api.schemas import ActionIn, ActionOut, error_responses
 from app.api.vehicles import vehicle_not_found
 from app.services.actions import (
     ActionNotAllowedError,
@@ -32,10 +32,7 @@ router = APIRouter(prefix="/api/v1/vehicles/{vehicle_id}/actions", tags=["Action
         "Record a status or planned action for a vehicle that is aging or approaching aging. "
         "Actions cannot be changed or deleted later. The service sets the time."
     ),
-    responses={
-        404: {"description": "No vehicle with this ID."},
-        422: {"description": "Invalid input, or the vehicle cannot get an action today."},
-    },
+    responses=error_responses(404, 422),
 )
 def record_action_route(
     vehicle_id: int,
@@ -74,7 +71,7 @@ def record_action_route(
     response_model=list[ActionOut],
     summary="A vehicle's action history",
     description="Every action recorded for the vehicle, newest first.",
-    responses={404: {"description": "No vehicle with this ID."}},
+    responses=error_responses(404, 422),
 )
 def list_actions_route(
     vehicle_id: int, session: Annotated[Session, Depends(get_session)]
