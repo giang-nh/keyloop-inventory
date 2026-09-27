@@ -501,3 +501,23 @@ asked for three code-level assumptions to be written into the spec (D-13 to D-15
 **Proof the new tests matter:** run against the old code, 4 of the 11 new tests failed; on
 the new code all pass. One of them checks, through the API, that every label (including
 bad and missing dates) is found by its own filter.
+
+---
+
+## Entry 19 · [Diligence] README and the AI Collaboration Narrative (issue #21)
+
+The AI drafted the README, including this narrative, from the log. I approved it and chose
+to keep the line about my Java enterprise background.
+
+**Checked on a clean clone, not assumed.** The AI cloned the repository into a new folder,
+made a new virtual environment and followed the README word for word: install, lint, tests,
+migrations, the 3-year data, and starting the server. Two things came out of it:
+- A bug: running the seed after the data generator said *"Seed data is already there"*,
+  which was not true (both use a dealership with the same name). The seed now refuses any
+  non-empty database with an honest message.
+- Port 8000 was taken by another program on my machine. The README now shows how to use
+  another port.
+
+**Two lines removed before I saw the draft**, because they were not true yet: one said I had
+already walked through every module (that is issue #22, not done), and one said a problem
+was caught "on day one".
