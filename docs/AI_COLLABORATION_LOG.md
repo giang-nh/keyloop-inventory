@@ -210,3 +210,16 @@ I asked for each to be explained with an example, then accepted all eight.
 **Discernment note:** the CSV formula-injection risk was found by the AI while designing the
 export for Power BI and Excel. It was not in the spec. It shows why "what did you assume
 that I didn't ask for?" is worth asking every time.
+
+---
+
+## Entry 9 · 2026-09-27 · [Diligence] Writing how GenAI was used in design (issue #10)
+
+The AI drafted section 9 of the system design from Entries 1 to 8. I approved it as
+written.
+
+**One correction made by the AI before I saw it:** the first draft included a lesson,
+*"once the spec existed, the AI stopped guessing and started asking"*. Nothing in this log
+supports that claim, so the AI replaced it with one that is supported: standing rules in
+`CLAUDE.md` made it report its own choices without being asked (Entry 8). Every claim in
+section 9 now points back to an entry in this log.

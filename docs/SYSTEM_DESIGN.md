@@ -507,7 +507,58 @@ step is **OpenTelemetry**, which carries the same idea across services (ADR 0005
 
 ## 9. How GenAI was used in the design phase
 
-*To be written by the owner in issue #10, based on the AI Collaboration Log.*
+I used Claude Code (Claude Opus 5.5) as a design partner throughout this phase. I
+followed one rule: **the AI can do the work, but I own the decisions.** For design, that
+meant the AI proposed options and weighed them, and I chose. Every step below is recorded
+in the [AI Collaboration Log](AI_COLLABORATION_LOG.md).
+
+### What the AI did, and what I did
+
+| The AI | Me |
+|---|---|
+| Compared the four challenge scenarios and their trade-offs | Chose the scenario and the scope |
+| Suggested needs the user might have but not state | Kept three, and moved the rest to design decisions |
+| Drafted requirements, acceptance criteria and assumptions | Checked they described the right thing, and changed one rule |
+| Laid out the options for each design decision, with pros and cons | Made every design decision |
+| Reported the choices it made that nobody asked for | Asked for each one to be explained, then accepted or rejected it |
+
+### Five moments that shaped the design
+
+1. **I did not take the AI's first recommendation.** It recommended a different scenario
+   (the document viewer) as the more impressive choice. I chose the inventory dashboard, to
+   go deep rather than wide: a small scope built to production quality.
+2. **The AI mixed up user needs and engineering choices.** Of the eight "unsaid needs" it
+   suggested, only three were things a manager would actually say. The other five, such as
+   "keep lists fast", were design decisions. Separating them kept the user voice honest.
+3. **The AI followed the words; I followed the purpose.** It proposed that actions be
+   allowed only on aging cars, as the brief literally says. I changed it to include cars
+   *approaching* 90 days, because the point of an early warning is to act before the
+   deadline, not after.
+4. **I corrected the AI's reasoning, not just its answer.** It justified Python by my own
+   familiarity with it. My strongest background is Java enterprise. A stack should fit the
+   product and the team that owns it, so the decision now rests on those two stated
+   assumptions (ADR 0001).
+5. **I asked the AI to explain before I decided.** Its first explanation of two database
+   trade-offs used technical terms. I asked for concrete examples (a car that arrived on
+   1 July; a car with three actions), and only then chose. A decision I cannot explain is
+   not a decision I own.
+
+### Asking the right questions
+
+I did not review every line the AI wrote. I asked questions and asked for evidence. The
+most useful one was: *"What did you assume that I didn't ask for?"* In the design phase, it
+brought out eight choices the AI had made on its own. One of them was a real security risk
+that was not in the spec: a note starting with `=` could run as a formula when the CSV
+export is opened in Excel. The design now protects against it (section 5.6).
+
+### What I learned
+
+- **The AI is fast at options and slow at purpose.** It lists trade-offs well, but it reads
+  requirements literally. The judgment about what the user is really trying to do stayed
+  with me.
+- **Standing rules beat one-off questions.** Because `CLAUDE.md` tells the AI to report
+  every choice nobody asked for, it listed its eight design choices on its own. I did not
+  have to remember to ask.
 
 ---
 
