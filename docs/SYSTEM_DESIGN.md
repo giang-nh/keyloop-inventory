@@ -90,6 +90,18 @@ Errors use one shape everywhere, so a client only needs to handle it once:
 `{"error": {"code": "...", "message": "...", "details": [...]}}`. The message says what went
 wrong and what to do next.
 
+### API conventions
+
+- **Versioned paths** (`/api/v1/...`), so a future breaking change can live at `/v2`
+  without breaking existing clients.
+- **Paging by offset:** `limit` (default 50, at most 200) and `offset`. Simple for clients
+  and for Power BI. If data changes between two calls, a car can shift between pages; a
+  cursor-based approach would avoid that, but is not needed at this scale.
+- **Stable order:** vehicles with no stock-in date first, then most days in stock, then
+  by ID, so the same request always gives the same order (SPEC AC-1.9).
+- **Invalid input returns 422** with the standard error shape.
+- **The service sets all timestamps**, in UTC. Clients cannot set or change them (SPEC D-12).
+
 ---
 
 ## 3. Data model
@@ -106,7 +118,7 @@ erDiagram
     }
     VEHICLE {
         int id PK
-        string vin "unique"
+        string vin "not unique: a car can come back (SPEC D-11)"
         int dealership_id FK
         string make
         string model
@@ -143,7 +155,8 @@ reading every one):
 |---|---|
 | `vehicle(dealership_id, sold_date, stock_in_date)` | The main list: one dealership, in stock, by age |
 | `vehicle(stock_in_date)` | Filters by age and status across all dealerships |
-| `vehicle(make, model)` | Make and model filters |
+| `vehicle(make, model)`, ignoring upper and lower case | Make and model filters. A normal index cannot help a case-insensitive match, so this one is built case-insensitive (`COLLATE NOCASE` in SQLite, an index on `lower()` in PostgreSQL) |
+| `vehicle(vin)` | Finding every stay in stock for one car |
 | `vehicle_action(vehicle_id, created_at)` | A vehicle's history, and its latest action |
 
 ---
@@ -475,6 +488,10 @@ Exposed at `/metrics` in the Prometheus format, which most monitoring tools can 
 | `http_request_duration_seconds{method, route}` | How fast responses are (for example the slowest 5%) |
 | `vehicle_actions_recorded_total{action_type}` | How managers use the service |
 
+Metrics are labelled by the route pattern (`/api/v1/vehicles/{id}`), not the real path
+(`/api/v1/vehicles/42`). Otherwise every vehicle ID would create its own metric series and
+overload the monitoring tool.
+
 **What we would alert on:** error rate above normal, slow responses on the list endpoint,
 and `/health` failing.
 
@@ -483,6 +500,10 @@ and `/health` failing.
 Every request gets a **request ID**. It is taken from the incoming `X-Request-ID` header if
 there is one, or created if not. It is returned in the response and written on every log
 line, so one request can be followed from start to end.
+
+An incoming ID is only accepted if it is at most 64 characters of letters, digits, `-` and
+`_`. Anything else is replaced with a new ID. Without this check, a caller could send a
+very long value, or one with line breaks, and write fake lines into our logs.
 
 With a single service, that is enough. When the service starts calling others, the next
 step is **OpenTelemetry**, which carries the same idea across services (ADR 0005).
@@ -495,6 +516,11 @@ step is **OpenTelemetry**, which carries the same idea across services (ADR 0005
 - **No login** in this assessment (SPEC section 4). This is the biggest gap before real
   use: anyone who can reach the API can record an action under any name. In production the
   name would come from the company's sign-in.
+- **Monitoring and exports are open.** `/health`, `/metrics` and the CSV exports need no
+  login, like the rest of the API. Anyone who can reach the service can see its traffic
+  figures and download all vehicles and actions. Accepted for this assessment (see
+  section 10).
+- **Incoming request IDs are checked** before they are logged (section 7).
 - **All input is checked** against strict models before it reaches the business rules.
 - **Database queries are built by SQLAlchemy with parameters**, never by joining strings,
   which prevents SQL injection.
@@ -571,3 +597,7 @@ export is opened in Excel. The design now protects against it (section 5.6).
 | No frontend | Build the manager's screen on the existing API contract |
 | Tracing within one service only | Add OpenTelemetry when other services are involved (ADR 0005) |
 | Data comes from a script | Receive stock updates from the dealer management system |
+| `/health`, `/metrics` and CSV exports need no login | Put monitoring on an internal network; require sign-in for exports |
+| "Today" is the UTC date, so a dealership far from UTC sees a status change a few hours late or early on the boundary day (SPEC D-2) | Store a time zone per dealership and count days in local time |
+| The VIN is not unique, so the database cannot stop the same car being loaded twice by mistake (SPEC D-11) | Have the loader warn when a VIN already has a vehicle in stock |
+| Offset paging: a car can shift between pages if data changes between two calls | Cursor-based paging |

@@ -223,3 +223,35 @@ written.
 supports that claim, so the AI replaced it with one that is supported: standing rules in
 `CLAUDE.md` made it report its own choices without being asked (Entry 8). Every claim in
 section 9 now points back to an entry in this log.
+
+---
+
+## Entry 10 · 2026-09-27 · [Discernment] Design review checkpoint (issue #11)
+
+**How the review ran:** I asked questions; the AI answered with evidence (file and line) and
+proposed fixes. Before the review, the AI read its own documents looking for weak spots, so
+the suggested questions pointed at real problems rather than easy wins.
+
+**"What would break this design?"** surfaced five problems that were not handled:
+
+1. Paging could repeat or skip cars, because cars with the same days in stock had no fixed
+   order. *Fix (AI): order ties by ID.*
+2. Cars with no stock-in date had no defined place in the list, and SQLite and PostgreSQL
+   put them in opposite places by default. Moving database would have changed the list
+   silently. *My decision: always put them first, so the missing data gets fixed.*
+3. Counting "today" in UTC shifts a status change by up to 7 hours for a dealership in
+   Vietnam. *My decision: keep UTC and document the limit.*
+4. A unique VIN would reject a car that comes back as a trade-in. *My decision: drop the
+   uniqueness; each stay in stock is its own record. The cost is documented.*
+5. The case-insensitive filter could not use a normal index. *Fix (AI): case-insensitive
+   index.*
+
+**"What did you assume that I didn't ask for?"** surfaced thirteen more choices. The most
+serious was a security one: the service trusted any request ID sent by a caller and wrote it
+into the logs, so a caller could forge log lines. *Fix (AI): accept only short, safe IDs.*
+I also decided: make and model filters stay exact matches; the summary also shows the value
+of `approaching` stock; open monitoring and exports go into the known limits.
+
+**Result:** 10 changes to the spec, the design and three implementation issues (#13, #15,
+#16), before any code was written. Every one of them would have been more expensive to find
+after the code existed.

@@ -76,7 +76,12 @@ I deal with first?"*. First, the list puts the cars with the most days in stock 
 top. Second, each car shows its latest recorded action, so the manager can see at a glance
 what has already been decided and avoid repeating work.
 
+Cars with no stock-in date go to the very top, above the oldest cars. We cannot tell how
+old they are, so the safest thing is to make sure someone sees them and fixes the record.
+
 A large dealership group can have thousands of cars, so the list comes back in pages.
+Many cars arrive on the same day, so cars with the same days in stock are always put in the
+same order (by their ID). Without that, a car could appear on two pages, or on none.
 
 > **R1.** A dealership manager can see the vehicles in stock, filter them by dealership,
 > make, model and days in stock, and see how long each one has been in stock.
@@ -86,12 +91,12 @@ A large dealership group can have thousands of cars, so the list comes back in p
 | AC-1.1 | The list shows only vehicles that are in stock. Sold vehicles are not shown. |
 | AC-1.2 | Each vehicle shows: ID, VIN, dealership, make, model, model year, price, stock-in date, days in stock, stock status and its latest action (if any). |
 | AC-1.3 | The list can be filtered by dealership. |
-| AC-1.4 | The list can be filtered by make. The match ignores upper and lower case. |
-| AC-1.5 | The list can be filtered by model. The match ignores upper and lower case. |
+| AC-1.4 | The list can be filtered by make. The match is exact but ignores upper and lower case: "toyota" finds "Toyota", "Toy" does not. |
+| AC-1.5 | The list can be filtered by model. The match is exact but ignores upper and lower case: "corolla" finds "Corolla", "Cor" does not. |
 | AC-1.6 | The list can be filtered by a minimum and a maximum number of days in stock. Both limits are included. |
 | AC-1.7 | The list can be filtered by stock status. |
 | AC-1.8 | When several filters are used, a vehicle must match all of them. |
-| AC-1.9 | By default, vehicles with the most days in stock come first. |
+| AC-1.9 | By default, vehicles with no stock-in date come first. After them, vehicles with the most days in stock come first. Vehicles with the same days in stock are ordered by ID, so paging never repeats or skips a vehicle. |
 | AC-1.10 | The list is returned in pages. The default page size is 50 and the largest is 200. The response includes the total number of matching vehicles. |
 | AC-1.11 | An invalid filter returns error 422 with a message that says what is wrong. Examples: a negative number of days, a minimum larger than the maximum, a page size over 200. |
 
@@ -123,7 +128,8 @@ gap than hide it. For the same reason, a stock-in date in the future is a data e
 we reject it when the data is loaded.
 
 Finally, a summary answers the money question (U1): how many cars are aging or
-approaching, and what the aging cars are worth in total.
+approaching, and what each group is worth in total. The approaching total shows how much
+money is about to be tied up, which is what the early warning is for.
 
 > **R2.** A dealership manager can see which vehicles have been in stock for more than 90
 > days, which ones are close to 90 days, and how much money is tied up in aging stock.
@@ -137,7 +143,7 @@ approaching, and what the aging cars are worth in total.
 | AC-2.5 | A vehicle with no stock-in date has no days in stock and the status `unknown`. It still appears in the list and is never counted as aging. |
 | AC-2.6 | The data loader rejects a vehicle whose stock-in date is after the reference date, and says which vehicle and why. |
 | AC-2.7 | Stock status applies only to vehicles in stock. Sold vehicles have no stock status. |
-| AC-2.8 | A summary shows, for one dealership or for all: vehicles in stock, number `aging`, number `approaching`, and the total price of `aging` vehicles. |
+| AC-2.8 | A summary shows, for one dealership or for all: vehicles in stock, number `aging`, number `approaching`, the total price of `aging` vehicles, and the total price of `approaching` vehicles. |
 
 ### Step 3: "What am I going to do about it?"
 
@@ -159,7 +165,7 @@ the manager types their name.
 
 | ID | Acceptance criterion |
 |---|---|
-| AC-3.1 | A manager can record an action for an `aging` or `approaching` vehicle with: an action type, the manager's name, and an optional note of up to 500 characters. The response includes the saved action and the time it was recorded. |
+| AC-3.1 | A manager can record an action for an `aging` or `approaching` vehicle with: an action type, the manager's name (up to 100 characters), and an optional note of up to 500 characters. The service sets the time the action was recorded; a client cannot set or change it. The response includes the saved action and that time. |
 | AC-3.2 | The action type must be one of the types listed in decision D-7. Any other type returns error 422. |
 | AC-3.3 | Recording an action for a vehicle that is `fresh` or `unknown`, or that has been sold, returns error 422. |
 | AC-3.4 | Recording or reading actions for a vehicle that does not exist returns error 404. |
@@ -205,6 +211,11 @@ overnight. Live push updates to a screen are out of scope.
 Whole days from the stock-in date to the reference date, in UTC. A car that arrived today
 has 0 days in stock.
 
+*Known limit:* a dealership in another time zone may see a status change a few hours late
+or early on the day a car crosses a threshold. For a dealership in Vietnam (UTC+7), a car
+that reaches day 91 at midnight local time shows as aging from 7 a.m. We accept this: the
+difference is a few hours on one day, and one clock for everyone keeps the rule simple.
+
 **D-3 · Is day 90 aging?**
 No. The brief says *more than* 90 days, so aging starts on day 91.
 
@@ -240,6 +251,16 @@ system this would come from the company's sign-in.
 **D-10 · Money**
 Prices are stored in one currency. The total value of aging stock is the sum of their
 list prices. It is a measure of size, not an accounting valuation.
+
+**D-11 · Can the same car be in stock more than once?**
+Yes. A car we sold can come back later, for example as a trade-in. Each stay in stock is
+its own vehicle record with its own ID, so the VIN is not required to be unique. The cost:
+the database can no longer stop the same car from being loaded twice by mistake. We accept
+that and note it as a known limit in the system design.
+
+**D-12 · Who sets the time of an action?**
+The service does, when the action is saved. A client cannot backdate an action. This keeps
+the history trustworthy: the order of events is the order in which they were recorded.
 
 ---
 
