@@ -33,6 +33,31 @@
         }
       }
     },
+    "objects": {
+      "value": [
+        {
+          "properties": {
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1000000000D"
+                }
+              }
+            },
+            "labelPrecision": {
+              "expr": {
+                "Literal": {
+                  "Value": "1L"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Aging Value (VND)"
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {

@@ -50,7 +50,7 @@ table DateTable
 
 	partition DateTable = calculated
 		mode: import
-		source = ```
+		source =
 				VAR StartDate = DATE ( 2020, 1, 1 )
 				VAR EndDate = DATE ( 2030, 12, 31 )
 				RETURN
@@ -60,5 +60,4 @@ table DateTable
 				    "Year", YEAR ( [Date] ),
 				    "Year Month", FORMAT ( [Date], "YYYY/MM" )
 				)
-				```
 

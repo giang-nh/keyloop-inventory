@@ -5,7 +5,7 @@
     "x": 16,
     "y": 8,
     "z": 0,
-    "height": 64,
+    "height": 72,
     "width": 610,
     "tabOrder": 0
   },
@@ -21,7 +21,7 @@
                   {
                     "value": "Aging list",
                     "textStyle": {
-                      "fontSize": "20pt",
+                      "fontSize": "16pt",
                       "fontWeight": "bold"
                     }
                   }
@@ -32,7 +32,7 @@
                   {
                     "value": "Cars over 90 days in stock, oldest first, with the latest action.",
                     "textStyle": {
-                      "fontSize": "10pt"
+                      "fontSize": "9pt"
                     }
                   }
                 ]

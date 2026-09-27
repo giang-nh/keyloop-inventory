@@ -521,3 +521,26 @@ migrations, the 3-year data, and starting the server. Two things came out of it:
 **Two lines removed before I saw the draft**, because they were not true yet: one said I had
 already walked through every module (that is issue #22, not done), and one said a problem
 was caught "on day one".
+
+---
+
+## Entry 20 · [Discernment] Power BI dashboard (issue #27)
+
+I asked the AI to build the dashboard following a Power BI project I had made before.
+Before building, it raised two conflicts:
+- **The spec.** The "aging trend over time" chart would need each car's status on past
+  dates. The exports do not carry that, so DAX (Power BI's formula language) would have to
+  recalculate the aging rule. That breaks SPEC R4. I dropped the chart.
+- **The issue.** Issue #27 still described the old one-page plan and the old data source.
+  It was updated to my new choices (four pages, CSV files read from a folder) before any
+  work started.
+
+**Checked, not assumed.** The AI wrote the model and pages as text files, then opened them
+in Power BI Desktop, refreshed, and compared the numbers with a separate calculation from
+the CSVs (440 in stock, 45 aging, 10.2% aging share, 26.2bn VND in aging stock). All four
+pages matched.
+
+**Its own mistake:** it found two layout problems (a heading that scrolled, cards showing
+"2K" instead of 2,074). When I asked it to fix them, its first guess at the card format
+setting was wrong and changed nothing. It found the real setting by making the change once in Power BI and reading the
+file Power BI saved, then checked the result on screen.

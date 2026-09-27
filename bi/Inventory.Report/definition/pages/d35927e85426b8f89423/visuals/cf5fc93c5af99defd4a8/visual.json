@@ -33,6 +33,24 @@
         }
       }
     },
+    "objects": {
+      "value": [
+        {
+          "properties": {
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Average Days From First Action To Sale"
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
