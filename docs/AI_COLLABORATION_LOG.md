@@ -95,3 +95,23 @@ database connection vs. calling the JSON API; full history vs. current stock onl
 **Knock-on effect:** sold vehicles are now in scope. The data model needs a vehicle status
 and a sold date, and aging applies only to vehicles still in stock (noted on issue #5).
 New issues: #25 (dataset), #26 (CSV exports), #27 (dashboard), #28 (screenshots).
+
+---
+
+## Entry 4 · 2026-09-27 · [Delegation] User voice (issue #3)
+
+**What happened:** the AI drafted the stated need and suggested eight possible unsaid
+needs, each with a reason. I decided which ones to keep.
+
+- **Kept (3):** money tied up in aging stock, an early warning before day 90, and a
+  filter for the manager's own dealership.
+- **Moved out of the user voice (5):** oldest first, latest action in the list, whether
+  actions lead to a sale, missing-date handling, and fast lists. These are real, but they
+  are design or quality decisions, not things a manager would ask for. They stay in the
+  product and move to the assumptions section and the system design.
+
+**Why it matters:** the AI's list mixed user needs with engineering choices. Separating
+them keeps the user voice honest and keeps each decision in the right place.
+
+**Open question raised:** what counts as "close to 90 days" for the early warning. To be
+decided in issue #5.
