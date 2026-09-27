@@ -369,3 +369,25 @@ help cars sell. Any dashboard view that shows actions working is showing that as
 The document says so in a warning box at the top.
 
 **Waiting for the owner:** the simulation rules (issue #25) need the owner's approval.
+
+---
+
+## Entry 14 · 2026-09-27 · [Diligence] Running checks without GitHub-hosted CI (issue #8)
+
+GitHub would not start the CI job on this account: *"recent account payments have failed
+or your spending limit needs to be increased."* The AI laid out four options (a
+self-hosted runner, a public repo, local checks, another CI service). **I chose local
+checks**, and to say so openly rather than leave failed runs for a reviewer to find.
+
+What was done:
+- A pre-push Git hook in `.githooks/` runs `ruff check .` and `pytest` and stops the push
+  if either fails. It lives in the repository, so any clone can turn it on with one
+  command.
+- The hook was tested both ways: with a failing test it stopped the push (exit code 1);
+  on the clean tree it passed (496 tests).
+- The GitHub Actions workflow is kept, but set to run only by hand, so each push no
+  longer creates a failed run. The README explains why.
+
+**Honest limit:** local checks are weaker evidence than CI on an independent machine.
+Anyone can see the workflow and run the same commands, but nothing outside my machine has
+run them for these commits.

@@ -1,0 +1,21 @@
+#!/bin/sh
+# Runs the same checks as CI before every push: lint and the full test suite.
+# The push is stopped if either fails.
+#
+# Turn it on once per clone:  git config core.hooksPath .githooks
+
+if [ -x .venv/Scripts/python.exe ]; then
+    PY=.venv/Scripts/python.exe      # Windows
+elif [ -x .venv/bin/python ]; then
+    PY=.venv/bin/python              # macOS and Linux
+else
+    PY=python
+fi
+
+echo "pre-push: ruff check ."
+"$PY" -m ruff check . || { echo "pre-push: lint failed, push stopped."; exit 1; }
+
+echo "pre-push: pytest"
+"$PY" -m pytest -q || { echo "pre-push: tests failed, push stopped."; exit 1; }
+
+echo "pre-push: all checks passed."

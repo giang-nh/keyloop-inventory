@@ -1,8 +1,11 @@
 name: CI
 
+# GitHub-hosted runners are not available on this account (billing), so this workflow
+# only runs when started by hand. The same checks run locally before every push through
+# the pre-push hook in .githooks/. To run CI on every push again, add:
+#   push:
+#     branches: [main]
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
