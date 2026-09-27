@@ -24,6 +24,18 @@ from app.services.aging import (
 logger = logging.getLogger("inventory")
 
 
+# The order of the vehicle list (AC-1.9).
+LIST_ORDER = (
+    # No stock-in date first, so missing data gets noticed and fixed.
+    Vehicle.stock_in_date.is_(None).desc(),
+    # Then the oldest (most days in stock) first.
+    Vehicle.stock_in_date.asc(),
+    # Then by ID, so paging never repeats or skips a vehicle. Without this, the database
+    # may return ties in any order, and each page request could see a different order.
+    Vehicle.id.asc(),
+)
+
+
 @dataclass(frozen=True)
 class VehicleFilters:
     dealership_id: int | None = None
@@ -124,14 +136,7 @@ def list_vehicles(
 
     page = session.scalars(
         query.options(joinedload(Vehicle.dealership))
-        .order_by(
-            # No stock-in date first, so missing data gets noticed and fixed (AC-1.9).
-            Vehicle.stock_in_date.is_(None).desc(),
-            # Then the oldest (most days in stock) first.
-            Vehicle.stock_in_date.asc(),
-            # Then by ID, so paging never repeats or skips a vehicle.
-            Vehicle.id.asc(),
-        )
+        .order_by(*LIST_ORDER)
         .limit(limit)
         .offset(offset)
     ).all()

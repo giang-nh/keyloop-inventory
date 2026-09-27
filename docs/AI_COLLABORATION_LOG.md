@@ -289,3 +289,43 @@ while its sold date is empty. The AI followed the design, as the later decision.
 
 **Caught by the warnings-as-errors rule (Entry 7):** a test left a database connection
 open. Python reported it as a warning, which failed the build, so it was fixed at once.
+
+---
+
+## Entry 12 · 2026-09-27 · [Discernment] Aging rule, vehicle list and actions (issues #12, #13, #14)
+
+**A bug the tests caught at once.** The AI wrote the shared error handler with the
+arguments of `JSONResponse` in the wrong order (status code first, content second). The
+first test that hit an error failed with a type error. Fixed before commit.
+
+**A test that passed for the wrong reason.** All the new tests passed on the first run.
+Passing on the first run is not proof that the tests are good, so the AI broke three key
+rules on purpose to see whether the tests would notice (a "mutation check"):
+
+| Rule broken on purpose | Caught? |
+|---|---|
+| Day 90 counted as aging (`>=` instead of `>`) | Yes |
+| Actions blocked for `approaching` cars | Yes |
+| The ID tie-break removed from the list order | **No** |
+
+The third one slipped through because SQLite happens to return rows with the same sort
+value in ID order. The paging test passed by luck, not because the rule was there.
+PostgreSQL makes no such promise, so after the move in ADR 0002, pages could repeat or
+skip cars and no test would fail. The AI added a test that checks the ordering rule
+itself, then broke the rule again to confirm the new test fails.
+
+**Other checks worth noting:**
+- The filter and the status label are compared on every day from 0 to 399, so they cannot
+  drift apart at a boundary (ADR 0003).
+- A client that tries to send its own `created_at` gets a 422, so actions cannot be
+  backdated (SPEC D-12).
+
+**Choices the issues did not ask for, reported per CLAUDE.md:**
+- The summary endpoint (AC-2.8) had no issue of its own; it was built with #13.
+- Refusing an action gives one of three codes: `vehicle_sold`,
+  `vehicle_stock_in_date_unknown` or `vehicle_not_eligible`, each with its own message.
+- The summary returns 404 for an unknown dealership; the list returns an empty page.
+- If a vehicle with a future stock-in date ever reaches the database (the loader stops
+  this), the list shows it as `unknown` and logs a warning, instead of failing for
+  everyone.
+- A blank manager name (only spaces) is rejected.

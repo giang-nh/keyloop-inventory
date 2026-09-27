@@ -2,7 +2,8 @@
 
 from sqlalchemy import select
 
-from app.models import Dealership
+from app.models import Dealership, Vehicle
+from app.services.inventory import LIST_ORDER
 
 LIST = "/api/v1/vehicles"
 
@@ -119,6 +120,15 @@ def test_ac_1_9_ties_are_ordered_by_id_so_pages_never_repeat_or_skip(client, add
         ]]
 
     assert seen == [v.id for v in created]
+
+
+def test_ac_1_9_order_always_ends_with_the_vehicle_id():
+    """SQLite happens to return ties in ID order, so the paging test above would pass even
+    without the ID tie-break. PostgreSQL does not promise that. This checks the rule itself."""
+    last = LIST_ORDER[-1]
+
+    assert last.element.compare(Vehicle.__table__.c.id)
+    assert last.modifier.__name__ == "asc_op"
 
 
 def test_ac_1_10_list_is_paged_with_a_total(client, add_vehicle):
