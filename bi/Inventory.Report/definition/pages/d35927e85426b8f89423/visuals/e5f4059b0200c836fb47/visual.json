@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "e5f4059b0200c836fb47",
   "position": {
-    "x": 16,
-    "y": 80,
-    "z": 500,
-    "height": 48,
-    "width": 1248,
-    "tabOrder": 500
+    "x": 16.018735362997656,
+    "y": 115.50351288056206,
+    "z": 1000,
+    "height": 48.056206088992973,
+    "width": 1247.7751756440282,
+    "tabOrder": 1000
   },
   "visual": {
     "visualType": "textbox",
@@ -21,8 +21,8 @@
                   {
                     "value": "Read with care: managers act on cars that are already old or hard to sell, so cars with an action are not a fair comparison with cars without one. This shows what happened, not what caused it.",
                     "textStyle": {
-                      "fontSize": "10pt",
-                      "fontStyle": "italic"
+                      "fontStyle": "italic",
+                      "fontSize": "10pt"
                     }
                   }
                 ]

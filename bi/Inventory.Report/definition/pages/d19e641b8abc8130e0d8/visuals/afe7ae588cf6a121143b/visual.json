@@ -4,10 +4,10 @@
   "position": {
     "x": 848,
     "y": 8,
-    "z": 1001,
-    "height": 64,
+    "z": 2000,
+    "height": 91,
     "width": 200,
-    "tabOrder": 1001
+    "tabOrder": 2000
   },
   "visual": {
     "visualType": "slicer",
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "Vehicles.Make",
-              "nativeQueryRef": "Make"
+              "nativeQueryRef": "Make",
+              "active": true
             }
           ]
         }

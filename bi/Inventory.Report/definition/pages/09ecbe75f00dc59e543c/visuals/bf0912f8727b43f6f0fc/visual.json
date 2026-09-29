@@ -2,12 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "bf0912f8727b43f6f0fc",
   "position": {
-    "x": 640,
-    "y": 8,
+    "x": 0,
+    "y": 0,
     "z": 1000,
-    "height": 64,
-    "width": 200,
-    "tabOrder": 1000
+    "height": 102.01405152224824,
+    "width": 200.09732656102682
   },
   "visual": {
     "visualType": "slicer",
@@ -27,7 +26,8 @@
                 }
               },
               "queryRef": "Vehicles.Dealership",
-              "nativeQueryRef": "Dealership"
+              "nativeQueryRef": "Dealership",
+              "active": true
             }
           ]
         }
@@ -45,6 +45,11 @@
               }
             }
           }
+        }
+      ],
+      "general": [
+        {
+          "properties": {}
         }
       ]
     },
@@ -71,5 +76,6 @@
       ]
     },
     "drillFilterOtherVisuals": true
-  }
+  },
+  "parentGroupName": "664cb6b3501645cda280"
 }

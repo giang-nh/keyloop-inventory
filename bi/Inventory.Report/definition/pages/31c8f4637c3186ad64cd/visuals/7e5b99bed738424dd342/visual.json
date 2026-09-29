@@ -2,12 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "7e5b99bed738424dd342",
   "position": {
-    "x": 872,
-    "y": 224,
-    "z": 3002,
-    "height": 480,
-    "width": 392,
-    "tabOrder": 3002
+    "x": 855.84579355071162,
+    "y": 0,
+    "z": 12000,
+    "height": 431.66276346604218,
+    "width": 391.92938209331652
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -27,7 +26,8 @@
                 }
               },
               "queryRef": "Vehicles.Stock Status",
-              "nativeQueryRef": "Stock Status"
+              "nativeQueryRef": "Stock Status",
+              "active": true
             }
           ]
         },
@@ -74,5 +74,6 @@
       ]
     },
     "drillFilterOtherVisuals": true
-  }
+  },
+  "parentGroupName": "d1dfb605ad3ba8adcbb2"
 }

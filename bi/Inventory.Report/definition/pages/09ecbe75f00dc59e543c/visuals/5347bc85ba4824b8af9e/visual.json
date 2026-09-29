@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "5347bc85ba4824b8af9e",
   "position": {
-    "x": 16,
-    "y": 200,
-    "z": 3000,
-    "height": 504,
-    "width": 1248,
-    "tabOrder": 3000
+    "x": 16.018735362997656,
+    "y": 267.25995316159248,
+    "z": 7000,
+    "height": 436.72131147540983,
+    "width": 1247.7751756440282,
+    "tabOrder": 7000
   },
   "visual": {
     "visualType": "lineClusteredColumnComboChart",
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "Sold Calendar.Sold Month",
-              "nativeQueryRef": "Sold Month"
+              "nativeQueryRef": "Sold Month",
+              "active": true
             }
           ]
         },

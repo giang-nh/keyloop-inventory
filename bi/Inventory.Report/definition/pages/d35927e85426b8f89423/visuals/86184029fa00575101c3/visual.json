@@ -2,12 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "86184029fa00575101c3",
   "position": {
-    "x": 848,
-    "y": 8,
-    "z": 1001,
-    "height": 64,
-    "width": 200,
-    "tabOrder": 1001
+    "x": 208.1012196234679,
+    "y": 0,
+    "z": 3000,
+    "height": 95.269320843091336,
+    "width": 200.09732656102682
   },
   "visual": {
     "visualType": "slicer",
@@ -27,7 +26,8 @@
                 }
               },
               "queryRef": "Vehicles.Make",
-              "nativeQueryRef": "Make"
+              "nativeQueryRef": "Make",
+              "active": true
             }
           ]
         }
@@ -71,5 +71,6 @@
       ]
     },
     "drillFilterOtherVisuals": true
-  }
+  },
+  "parentGroupName": "6e7f4512476b6910be71"
 }

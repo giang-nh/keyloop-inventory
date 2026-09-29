@@ -2,12 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "9be9b16002a59356c101",
   "position": {
-    "x": 16,
-    "y": 224,
-    "z": 3000,
-    "height": 480,
-    "width": 400,
-    "tabOrder": 3000
+    "x": 0,
+    "y": 0,
+    "z": 10000,
+    "height": 431.66276346604218,
+    "width": 399.92794091154747
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -27,7 +26,8 @@
                 }
               },
               "queryRef": "Vehicles.Dealership",
-              "nativeQueryRef": "Dealership"
+              "nativeQueryRef": "Dealership",
+              "active": true
             }
           ]
         },
@@ -119,5 +119,6 @@
       ]
     },
     "drillFilterOtherVisuals": true
-  }
+  },
+  "parentGroupName": "d1dfb605ad3ba8adcbb2"
 }
