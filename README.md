@@ -12,7 +12,7 @@ mocked by an API contract.
 > to), decide what to do about each one, and see whether things are getting better. This
 > service answers those four questions. The full story is in [`docs/SPEC.md`](docs/SPEC.md).
 
-**Video walkthrough:** *link added when recorded*
+**Video walkthrough:** https://photos.app.goo.gl/7iLAU9EoeYqAPeCb8
 
 ---
 
